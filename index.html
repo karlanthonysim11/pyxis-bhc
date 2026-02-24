@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PYXIS</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div id="login-screen" class="auth-page">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <i class="fa-solid fa-staff-snake"></i>
+                <h1>PYXIS</h1>
+                <p>Barangay Health Center Inventory</p>
+            </div>
+            <div class="auth-form">
+                <input type="text" id="username" placeholder="Username" spellcheck="false" autocomplete="off">
+                <input type="password" id="password" placeholder="Password">
+                <button onclick="app.login()" class="btn-main">Initialize System</button>
+            </div>
+            <div style="margin-top: 20px; color: #64748b; font-size: 0.8rem;">
+                <i class="fa-solid fa-lock"></i> Secured Local Access
+            </div>
+        </div>
+    </div>
+
+    <div id="app-interface" class="app-shell hidden">
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <div class="sidebar-brand">
+                    <span>PYXIS</span>
+                </div>
+                <nav class="nav-stack">
+                    <div class="nav-link active" onclick="ui.view('dashboard')" id="tab-dashboard">
+                        <i class="fa-solid fa-house"></i> Dashboard
+                    </div>
+                    <div class="nav-link" onclick="ui.view('inventory')" id="tab-inventory">
+                        <i class="fa-solid fa-pills"></i> Inventory List
+                    </div>
+                    <div class="nav-link" onclick="ui.view('add')" id="tab-add">
+                        <i class="fa-solid fa-square-plus"></i> New Supply
+                    </div>
+                    <div class="nav-link" onclick="ui.view('categories')" id="tab-categories">
+                        <i class="fa-solid fa-tags"></i> Categories
+                    </div>
+                    <div class="nav-link" onclick="ui.view('reports')" id="tab-reports">
+                        <i class="fa-solid fa-file-contract"></i> Audit Reports
+                    </div>
+                </nav>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="logout-action" onclick="location.reload()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-body">
+            <header class="top-nav">
+                <h2 id="view-title">DASHBOARD</h2>
+                <div class="header-tools">
+                    <div class="notif-wrapper">
+                        <i class="fa-regular fa-bell"></i>
+                        <span id="alert-badge" class="badge">0</span>
+                    </div>
+                    <div class="user-profile">
+                        <div class="u-info">
+                            <span class="u-name">Administrator</span>
+                            <span class="u-loc">BHC Indangan</span>
+                        </div>
+                        <div class="u-avatar">AD</div>
+                    </div>
+                </div>
+            </header>
+
+            <section id="render-area" class="view-content"></section>
+        </main>
+    </div>
+    
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+</body>
+</html>

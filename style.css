@@ -1,0 +1,87 @@
+:root {
+    --bg-light: #f8fafc;
+    --sidebar-w: 260px;
+    --accent-blue: #0ea5e9;
+    --text-dark: #0f172a;
+    --border: #e2e8f0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+body { background: var(--bg-light); color: var(--text-dark); height: 100vh; overflow: hidden; }
+.hidden { display: none !important; }
+
+/* --- LOGIN PAGE STYLING --- */
+.auth-page { height: 100vh; background: #0f172a; display: flex; align-items: center; justify-content: center; }
+.auth-card { background: white; width: 420px; padding: 50px; border-radius: 25px; text-align: center; }
+.auth-logo i { font-size: 3rem; color: var(--accent-blue); margin-bottom: 15px; }
+.auth-logo h1 { font-size: 2rem; letter-spacing: -2px; }
+.auth-logo p { color: #64748b; margin-bottom: 40px; }
+
+/* BIG ANSWER BOXES */
+.auth-form input { 
+    width: 100%; 
+    padding: 14px 16px; /* Big vertical size */
+    margin-bottom: 12px; 
+    border: 1px solid #cbd5e1; 
+    border-radius: 12px; 
+    font-size: 1.1rem; /* Larger text */
+    outline: none;
+    transition: 0.2s;
+}
+.auth-form input:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); }
+
+.btn-main { 
+    width: 100%; background: var(--accent-blue); color: white; border: none; 
+    padding: 12px; border-radius: 14px; cursor: pointer; font-weight: 700; font-size: 1.1rem; 
+}
+
+/* --- MAIN INTERFACE STYLING --- */
+.app-shell { display: flex; height: 100vh; }
+.sidebar { width: var(--sidebar-w); background: white; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; padding: 30px 0; }
+.main-body { flex: 1; display: flex; flex-direction: column; background: var(--bg-light); }
+
+.top-nav { 
+    height: 70px; 
+    background: rgb(255, 255, 255); 
+    border-bottom: 1px solid var(--border); 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 0 30px;
+}
+
+/* CONTENT SPACING */
+.view-content { padding: 35px 40px; overflow-y: auto; flex: 1; }
+
+.header-tools { display: flex; align-items: center; gap: 20px; }
+
+/* NOTIFICATIONS */
+.notif-wrapper { position: relative; font-size: 1.2rem; color: #000000; cursor: pointer; }
+.badge { background: #ef4444; color: rgb(255, 255, 255); border-radius: 10px; padding: 2px 5px; font-size: 10px; font-weight: 700; position: absolute; top: -8px; right: -8px; border: 2px solid rgb(0, 0, 0); }
+
+/* USER PROFILE PILL (Clean Size) */
+.user-profile { 
+    display: flex; align-items: center; gap: 12px; 
+    padding: 5px 5px 5px 15px; background: #ffffff; 
+    border-radius: 50px; border: 1px solid var(--border);
+}
+.u-info { text-align: right; line-height: 1.2; }
+.u-name { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); }
+.u-loc { font-size: 0.7rem; color: #64748b; }
+.u-avatar { width: 34px; height: 34px; background: #0f172a; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; }
+
+/* SIDEBAR BRAND */
+.sidebar-brand { padding: 0 25px 40px; font-size: 1.4rem; font-weight: 800; }
+.sidebar-brand span span { color: var(--accent-blue); }
+
+.nav-link { padding: 14px 25px; color: #64748b; cursor: pointer; display: flex; gap: 12px; align-items: center; font-weight: 500; }
+.nav-link.active { color: var(--accent-blue); background: #f0f9ff; border-right: 3px solid var(--accent-blue); }
+
+.white-card { background: rgb(255, 255, 255); border-radius: 12px; padding: 30px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.stat-box { background: white; padding: 25px; border-radius: 12px; border: 1px solid var(--border); }
+.logout-action { padding: 12px 15px; color: #94a3b8; cursor: pointer; border-radius: 8px; display: flex; gap: 10px; align-items: center; margin: 0 15px; }
+.logout-action:hover { background: #fff1f2; color: #e11d48; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+th { text-align: left; padding: 12px; color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+td { padding: 15px 12px; border-bottom: 1px solid #f8fafc; font-size: 0.9rem; }
