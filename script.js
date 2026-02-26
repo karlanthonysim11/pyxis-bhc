@@ -27,7 +27,11 @@ const app = {
             categories = catData ? catData.map(c => c.name) : [];
 
             this.updateBadge();
-            ui.view('dashboard');
+            
+            // This ensures if we are already on a page, it updates with the fresh data
+            const currentTab = document.getElementById('view-title').innerText.toLowerCase().replace(' ', '-');
+            ui.render(currentTab || 'dashboard');
+            
             console.log("System initialized with Supabase Cloud Data.");
         } catch (err) {
             console.error("Fetch error:", err);
@@ -61,7 +65,10 @@ const app = {
             .from('inventory')
             .insert([{ name: n, mg: mg, cat: c, qty: q, exp: e }]);
             
-        if(!error) await this.init();
+        if(!error) {
+            await this.init(); // Wait for data to refresh
+            ui.view('inventory'); // Then switch view
+        }
     },
 
     async deleteItem(id) {
@@ -72,8 +79,13 @@ const app = {
     },
 
     async updateQty(id, newQty) {
+        // We MUST await the update so the database finishes before we re-load the UI
         const { error } = await _supabase.from('inventory').update({ qty: parseInt(newQty) }).eq('id', id);
-        if(!error) await this.init();
+        if(!error) {
+            await this.init(); // Re-fetch the updated list from Supabase
+        } else {
+            alert("Failed to update stock in cloud.");
+        }
     },
 
     updateBadge() {
@@ -125,7 +137,7 @@ const ui = {
                         <div class="stat-data"><h3 class="text-red" style="color:#ef4444">${lowItems}</h3><p>Low Stock</p></div>
                     </div>
                 </div>
-                <div class="white-card">
+                <div class="form-card" style="max-width: 100%; margin: 0;">
                     <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
                         <i class="fa-solid fa-heart-pulse" style="color:var(--accent-blue)"></i>
                         <h3>System Health</h3>
@@ -220,7 +232,7 @@ const ui = {
         // CATEGORIES PAGE
         if(tab === 'categories') {
             root.innerHTML = `
-                <div class="white-card">
+                <div class="form-card" style="max-width: 100%;">
                     <div class="form-header"><i class="fa-solid fa-tags"></i><h3>Active Categories</h3></div>
                     <div style="display:flex; flex-wrap:wrap; gap:10px;">
                         ${categories.map(c => `<span class="stock-indicator stable">${c}</span>`).join('')}
@@ -231,7 +243,7 @@ const ui = {
         // REPORTS PAGE
         if(tab === 'reports') {
             root.innerHTML = `
-                <div class="white-card" style="text-align:center; padding:50px;">
+                <div class="form-card" style="text-align:center; padding:50px; max-width: 100%;">
                     <i class="fa-solid fa-file-invoice" style="font-size:3rem; color:var(--accent-blue); margin-bottom:20px;"></i>
                     <h3>Audit Report Generation</h3>
                     <p style="color:var(--text-muted); margin-bottom:25px;">Ready to generate official inventory status for BHC Indangan.</p>
@@ -250,7 +262,6 @@ const ui = {
         const e = document.getElementById('e').value;
         if(n && q && c) { 
             app.saveMed(n, mg, c, q, e); 
-            this.view('inventory'); 
         } else {
             alert("Required: Name, Category, and Quantity.");
         }
@@ -259,8 +270,12 @@ const ui = {
     async dispense(id, currentQty, name) {
         const v = prompt(`Dispense ${name}?\nEnter quantity to remove from stock:`);
         if(v && !isNaN(v)) { 
-            const newQty = currentQty - parseInt(v);
+            const amountToRemove = parseInt(v);
+            const newQty = currentQty - amountToRemove;
+            
             if(newQty < 0) return alert("Error: Insufficient stock for this request.");
+            
+            // We await the update so the database is ready before we reload the view
             await app.updateQty(id, newQty);
             this.view('inventory'); 
         }
