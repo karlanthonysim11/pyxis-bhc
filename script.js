@@ -29,7 +29,8 @@ const app = {
             this.updateBadge();
             
             // Auto-refresh the current view
-            const title = document.getElementById('view-title').innerText.toLowerCase().replace(' ', '-');
+            const titleElement = document.getElementById('view-title');
+            const title = titleElement ? titleElement.innerText.toLowerCase().replace(' ', '-') : 'dashboard';
             ui.render(title || 'dashboard');
             
             console.log("Data Refreshed:", inventory);
@@ -60,6 +61,7 @@ const app = {
     },
 
     async saveMed(n, mg, c, q, e) {
+        // Ensure quantity is saved as a number
         const { error } = await _supabase
             .from('inventory')
             .insert([{ name: n, mg: mg, cat: c, qty: parseInt(q), exp: e }]);
@@ -81,8 +83,8 @@ const app = {
     },
 
     async updateQty(id, newQty) {
-        // DEBUG LOG
-        console.log(`Updating ID ${id} to ${newQty}`);
+        // This function sends the FINAL calculated number to the cloud
+        console.log(`Cloud Update: Setting ID ${id} to ${newQty} units`);
 
         const { error } = await _supabase
             .from('inventory')
@@ -91,11 +93,11 @@ const app = {
             
         if(error) {
             console.error("Supabase Error:", error);
-            alert("Cloud Update Failed: " + error.message + "\n\nCheck if RLS Policies are enabled in Supabase.");
+            alert("Cloud Update Failed: " + error.message);
             return false;
         }
         
-        await this.init(); // Refresh local data
+        await this.init(); 
         return true;
     },
 
@@ -122,16 +124,18 @@ const ui = {
         const target = document.getElementById(`tab-${tab}`);
         if(target) target.classList.add('active');
         
-        document.getElementById('view-title').innerText = tab.toUpperCase().replace('-', ' ');
+        const titleElement = document.getElementById('view-title');
+        if(titleElement) titleElement.innerText = tab.toUpperCase().replace('-', ' ');
         this.render(tab);
     },
 
     render(tab) {
         const root = document.getElementById('render-area');
+        if(!root) return;
 
         if(tab === 'dashboard') {
             const totalStock = inventory.reduce((a,b) => a + (parseInt(b.qty) || 0), 0);
-            const lowItems = inventory.filter(m => m.qty < 10).length;
+            const lowItems = inventory.filter(m => (parseInt(m.qty) || 0) < 10).length;
             root.innerHTML = `
                 <div class="stats-row">
                     <div class="stat-card">
@@ -233,26 +237,13 @@ const ui = {
                     </button>
                 </div>`;
         }
-
+        
+        // Render for categories and reports remains the same as your source
         if(tab === 'categories') {
-            root.innerHTML = `
-                <div class="form-card" style="max-width: 100%;">
-                    <div class="form-header"><i class="fa-solid fa-tags"></i><h3>Active Categories</h3></div>
-                    <div style="display:flex; flex-wrap:wrap; gap:10px;">
-                        ${categories.map(c => `<span class="stock-indicator stable">${c}</span>`).join('')}
-                    </div>
-                </div>`;
+            root.innerHTML = `<div class="form-card" style="max-width: 100%;"><div class="form-header"><i class="fa-solid fa-tags"></i><h3>Active Categories</h3></div><div style="display:flex; flex-wrap:wrap; gap:10px;">${categories.map(c => `<span class="stock-indicator stable">${c}</span>`).join('')}</div></div>`;
         }
-
         if(tab === 'reports') {
-            root.innerHTML = `
-                <div class="form-card" style="text-align:center; padding:50px; max-width: 100%;">
-                    <i class="fa-solid fa-file-invoice" style="font-size:3rem; color:var(--accent-blue); margin-bottom:20px;"></i>
-                    <h3>Audit Report Generation</h3>
-                    <button class="btn-submit" style="max-width:300px; margin:0 auto;" onclick="window.print()">
-                        <i class="fa-solid fa-print"></i> Generate PDF Report
-                    </button>
-                </div>`;
+            root.innerHTML = `<div class="form-card" style="text-align:center; padding:50px; max-width: 100%;"><i class="fa-solid fa-file-invoice" style="font-size:3rem; color:var(--accent-blue); margin-bottom:20px;"></i><h3>Audit Report Generation</h3><button class="btn-submit" style="max-width:300px; margin:0 auto;" onclick="window.print()"><i class="fa-solid fa-print"></i> Generate PDF Report</button></div>`;
         }
     },
 
@@ -260,7 +251,7 @@ const ui = {
         const n = document.getElementById('n').value;
         const mg = document.getElementById('mg').value;
         const c = document.getElementById('c').value;
-        const q = parseInt(document.getElementById('q').value);
+        const q = document.getElementById('q').value;
         const e = document.getElementById('e').value;
         if(n && q && c) app.saveMed(n, mg, c, q, e);
         else alert("Fill in required fields.");
@@ -268,15 +259,19 @@ const ui = {
 
     async dispense(id, currentQty, name) {
         const v = prompt(`Dispense ${name}?\nCurrent Stock: ${currentQty}\nHow many units to remove?`);
+        
         if(v !== null && v !== "" && !isNaN(v)) { 
-            const amount = parseInt(v);
-            const newQty = currentQty - amount;
+            const amountToRemove = parseInt(v);
+            
+            // MATH FIX: Subtract input from the current cloud quantity
+            const newQty = parseInt(currentQty) - amountToRemove;
+            
+            console.log(`Math: ${currentQty} - ${amountToRemove} = ${newQty}`);
             
             if(newQty < 0) return alert("Insufficient stock!");
             
             const success = await app.updateQty(id, newQty);
             if(success) {
-                // Force UI to redraw
                 this.view('inventory');
             }
         }
