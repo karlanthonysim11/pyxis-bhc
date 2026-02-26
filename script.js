@@ -42,7 +42,6 @@ const app = {
 
     async login() {
         const user = document.getElementById('username').value.toLowerCase();
-        // Simple admin check for your prototype
         if(user === 'admin') {
             localStorage.setItem('pyxis_logged_in', 'true');
             this.showAppInterface();
@@ -96,7 +95,6 @@ const ui = {
     },
 
     view(tab) {
-        // Updated selector to match your sidebar class names
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
         const target = document.getElementById(`tab-${tab}`);
         if(target) target.classList.add('active');
@@ -108,36 +106,71 @@ const ui = {
     render(tab) {
         const root = document.getElementById('render-area');
 
+        // DASHBOARD PAGE
         if(tab === 'dashboard') {
             const totalStock = inventory.reduce((a,b) => a + (parseInt(b.qty) || 0), 0);
             const lowItems = inventory.filter(m => m.qty < 10).length;
             root.innerHTML = `
-                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; margin-bottom:30px;">
-                    <div class="stat-box"><h2>${inventory.length}</h2><p>Items</p></div>
-                    <div class="stat-box"><h2>${totalStock}</h2><p>Units</p></div>
-                    <div class="stat-box"><h2 style="color:#ef4444">${lowItems}</h2><p>Low Stock</p></div>
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="icon-circle bg-blue"><i class="fa-solid fa-pills"></i></div>
+                        <div class="stat-data"><h3>${inventory.length}</h3><p>Medicines</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-circle bg-green"><i class="fa-solid fa-boxes-stacked"></i></div>
+                        <div class="stat-data"><h3>${totalStock}</h3><p>Total Units</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-circle bg-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="stat-data"><h3 class="text-red" style="color:#ef4444">${lowItems}</h3><p>Low Stock</p></div>
+                    </div>
                 </div>
                 <div class="white-card">
-                    <h3>System Health</h3>
-                    <p>Connection: <span style="color:green">● Cloud Sync Active</span></p>
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                        <i class="fa-solid fa-heart-pulse" style="color:var(--accent-blue)"></i>
+                        <h3>System Health</h3>
+                    </div>
+                    <p style="margin-bottom:10px;">Connection: <span style="color:green; font-weight:bold;">● Cloud Sync Active</span></p>
+                    <p style="color:var(--text-muted); font-size:0.85rem;">Secure connection established with Supabase PostgreSQL cluster.</p>
                 </div>`;
         }
 
+        // INVENTORY PAGE
         if(tab === 'inventory') {
             root.innerHTML = `
-                <div class="white-card">
-                    <table>
-                        <thead><tr><th>Medicine</th><th>Dosage</th><th>Category</th><th>Stock</th><th>Expiry</th><th>Actions</th></tr></thead>
+                <div class="table-card">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Medicine Details</th>
+                                <th>Category</th>
+                                <th>Stock Level</th>
+                                <th>Expiry</th>
+                                <th style="text-align:right">Actions</th>
+                            </tr>
+                        </thead>
                         <tbody>${inventory.map((m) => `
                             <tr>
-                                <td><b>${m.name}</b></td>
-                                <td>${m.mg || '--'} mg</td>
-                                <td>${m.cat}</td>
-                                <td style="color:${m.qty < 10 ? '#ef4444' : 'inherit'}; font-weight:bold">${m.qty}</td>
-                                <td style="${this.getExpiryStyle(m.exp)}">${m.exp || '--'}</td>
                                 <td>
-                                    <button class="btn-text" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name}')">Dispense</button>
-                                    <button class="btn-text delete" onclick="app.deleteItem('${m.id}')">Delete</button>
+                                    <div class="med-info">
+                                        <span class="med-primary">${m.name}</span>
+                                        <span class="med-secondary">${m.mg || '--'} mg</span>
+                                    </div>
+                                </td>
+                                <td><span class="stock-indicator" style="background:#f1f5f9; color:#475569;">${m.cat}</span></td>
+                                <td>
+                                    <span class="stock-indicator ${m.qty < 10 ? 'critical' : 'stable'}">
+                                        ${m.qty} Units
+                                    </span>
+                                </td>
+                                <td><span style="${this.getExpiryStyle(m.exp)}">${m.exp || '--'}</span></td>
+                                <td style="text-align:right">
+                                    <button class="btn-icon dispense" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name}')">
+                                        <i class="fa-solid fa-hand-holding-medical"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="app.deleteItem('${m.id}')">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
                                 </td>
                             </tr>`).join('')}
                         </tbody>
@@ -145,36 +178,66 @@ const ui = {
                 </div>`;
         }
 
+        // ADD SUPPLY PAGE
         if(tab === 'add') {
             root.innerHTML = `
-                <div class="white-card" style="max-width:500px">
-                    <h3>Register New Supply</h3>
-                    <input id="n" type="text" placeholder="Medicine Name" class="form-input">
-                    <input id="mg" type="text" placeholder="Dosage (mg)" class="form-input">
-                    <select id="c" class="form-input">
-                        <option value="" disabled selected>Select Category</option>
-                        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
-                    </select>
-                    <input id="q" type="number" placeholder="Initial Quantity" class="form-input">
-                    <input id="e" type="date" class="form-input">
-                    <button class="btn-main" onclick="ui.handleSave()">Add to Cloud</button>
+                <div class="form-card">
+                    <div class="form-header">
+                        <i class="fa-solid fa-circle-plus"></i>
+                        <h3>Register New Supply</h3>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        <div class="input-field" style="grid-column: span 2;">
+                            <label>Medicine Name</label>
+                            <input id="n" type="text" placeholder="Enter generic or brand name">
+                        </div>
+                        <div class="input-field">
+                            <label>Dosage (mg)</label>
+                            <input id="mg" type="text" placeholder="e.g. 500">
+                        </div>
+                        <div class="input-field">
+                            <label>Category</label>
+                            <select id="c">
+                                <option value="" disabled selected>Select category</option>
+                                ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="input-field">
+                            <label>Initial Quantity</label>
+                            <input id="q" type="number" placeholder="0">
+                        </div>
+                        <div class="input-field">
+                            <label>Expiration Date</label>
+                            <input id="e" type="date">
+                        </div>
+                    </div>
+                    <button class="btn-submit" onclick="ui.handleSave()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Save to Cloud Inventory
+                    </button>
                 </div>`;
         }
 
+        // CATEGORIES PAGE
         if(tab === 'categories') {
             root.innerHTML = `
                 <div class="white-card">
-                    <h3>Active Categories</h3>
-                    <ul>${categories.map(c => `<li>${c}</li>`).join('')}</ul>
+                    <div class="form-header"><i class="fa-solid fa-tags"></i><h3>Active Categories</h3></div>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                        ${categories.map(c => `<span class="stock-indicator stable">${c}</span>`).join('')}
+                    </div>
                 </div>`;
         }
 
+        // REPORTS PAGE
         if(tab === 'reports') {
             root.innerHTML = `
-                <div class="white-card">
-                    <h3>Audit Report</h3>
-                    <p>Generating summary for BHC Indangan...</p>
-                    <button class="btn-main" onclick="window.print()">Print Report</button>
+                <div class="white-card" style="text-align:center; padding:50px;">
+                    <i class="fa-solid fa-file-invoice" style="font-size:3rem; color:var(--accent-blue); margin-bottom:20px;"></i>
+                    <h3>Audit Report Generation</h3>
+                    <p style="color:var(--text-muted); margin-bottom:25px;">Ready to generate official inventory status for BHC Indangan.</p>
+                    <button class="btn-submit" style="max-width:300px; margin:0 auto;" onclick="window.print()">
+                        <i class="fa-solid fa-print"></i> Generate PDF Report
+                    </button>
                 </div>`;
         }
     },
@@ -194,10 +257,10 @@ const ui = {
     },
 
     async dispense(id, currentQty, name) {
-        const v = prompt(`Dispense ${name}? Quantity:`);
+        const v = prompt(`Dispense ${name}?\nEnter quantity to remove from stock:`);
         if(v && !isNaN(v)) { 
             const newQty = currentQty - parseInt(v);
-            if(newQty < 0) return alert("Low stock!");
+            if(newQty < 0) return alert("Error: Insufficient stock for this request.");
             await app.updateQty(id, newQty);
             this.view('inventory'); 
         }
