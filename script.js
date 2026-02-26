@@ -28,14 +28,13 @@ const app = {
 
             this.updateBadge();
             
-            // This ensures if we are already on a page, it updates with the fresh data
-            const currentTab = document.getElementById('view-title').innerText.toLowerCase().replace(' ', '-');
-            ui.render(currentTab || 'dashboard');
+            // Auto-refresh the current view
+            const title = document.getElementById('view-title').innerText.toLowerCase().replace(' ', '-');
+            ui.render(title || 'dashboard');
             
-            console.log("System initialized with Supabase Cloud Data.");
+            console.log("Data Refreshed:", inventory);
         } catch (err) {
             console.error("Fetch error:", err);
-            alert("Connection Error: Check your Supabase setup.");
         }
     },
 
@@ -63,11 +62,13 @@ const app = {
     async saveMed(n, mg, c, q, e) {
         const { error } = await _supabase
             .from('inventory')
-            .insert([{ name: n, mg: mg, cat: c, qty: q, exp: e }]);
+            .insert([{ name: n, mg: mg, cat: c, qty: parseInt(q), exp: e }]);
             
         if(!error) {
-            await this.init(); // Wait for data to refresh
-            ui.view('inventory'); // Then switch view
+            await this.init();
+            ui.view('inventory');
+        } else {
+            alert("Save Failed: " + error.message);
         }
     },
 
@@ -75,17 +76,27 @@ const app = {
         if(confirm(`Delete this item permanently?`)) {
             const { error } = await _supabase.from('inventory').delete().eq('id', id);
             if(!error) await this.init();
+            else alert("Delete Failed: " + error.message);
         }
     },
 
     async updateQty(id, newQty) {
-        // We MUST await the update so the database finishes before we re-load the UI
-        const { error } = await _supabase.from('inventory').update({ qty: parseInt(newQty) }).eq('id', id);
-        if(!error) {
-            await this.init(); // Re-fetch the updated list from Supabase
-        } else {
-            alert("Failed to update stock in cloud.");
+        // DEBUG LOG
+        console.log(`Updating ID ${id} to ${newQty}`);
+
+        const { error } = await _supabase
+            .from('inventory')
+            .update({ qty: parseInt(newQty) })
+            .eq('id', id);
+            
+        if(error) {
+            console.error("Supabase Error:", error);
+            alert("Cloud Update Failed: " + error.message + "\n\nCheck if RLS Policies are enabled in Supabase.");
+            return false;
         }
+        
+        await this.init(); // Refresh local data
+        return true;
     },
 
     updateBadge() {
@@ -118,7 +129,6 @@ const ui = {
     render(tab) {
         const root = document.getElementById('render-area');
 
-        // DASHBOARD PAGE
         if(tab === 'dashboard') {
             const totalStock = inventory.reduce((a,b) => a + (parseInt(b.qty) || 0), 0);
             const lowItems = inventory.filter(m => m.qty < 10).length;
@@ -143,11 +153,10 @@ const ui = {
                         <h3>System Health</h3>
                     </div>
                     <p style="margin-bottom:10px;">Connection: <span style="color:green; font-weight:bold;">● Cloud Sync Active</span></p>
-                    <p style="color:var(--text-muted); font-size:0.85rem;">Secure connection established with Supabase PostgreSQL cluster.</p>
+                    <p style="color:var(--text-muted); font-size:0.85rem;">Secure connection established with Supabase PostgreSQL.</p>
                 </div>`;
         }
 
-        // INVENTORY PAGE
         if(tab === 'inventory') {
             root.innerHTML = `
                 <div class="table-card">
@@ -177,7 +186,7 @@ const ui = {
                                 </td>
                                 <td><span style="${this.getExpiryStyle(m.exp)}">${m.exp || '--'}</span></td>
                                 <td style="text-align:right">
-                                    <button class="btn-icon dispense" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name}')">
+                                    <button class="btn-icon dispense" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name.replace(/'/g, "\\'")}')">
                                         <i class="fa-solid fa-hand-holding-medical"></i>
                                     </button>
                                     <button class="btn-icon delete" onclick="app.deleteItem('${m.id}')">
@@ -190,22 +199,18 @@ const ui = {
                 </div>`;
         }
 
-        // ADD SUPPLY PAGE
         if(tab === 'add') {
             root.innerHTML = `
                 <div class="form-card">
-                    <div class="form-header">
-                        <i class="fa-solid fa-circle-plus"></i>
-                        <h3>Register New Supply</h3>
-                    </div>
+                    <div class="form-header"><i class="fa-solid fa-circle-plus"></i><h3>Register New Supply</h3></div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                         <div class="input-field" style="grid-column: span 2;">
                             <label>Medicine Name</label>
-                            <input id="n" type="text" placeholder="Enter generic or brand name">
+                            <input id="n" type="text" placeholder="Enter name">
                         </div>
                         <div class="input-field">
                             <label>Dosage (mg)</label>
-                            <input id="mg" type="text" placeholder="e.g. 500">
+                            <input id="mg" type="text" placeholder="500">
                         </div>
                         <div class="input-field">
                             <label>Category</label>
@@ -224,12 +229,11 @@ const ui = {
                         </div>
                     </div>
                     <button class="btn-submit" onclick="ui.handleSave()">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Save to Cloud Inventory
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Save to Cloud
                     </button>
                 </div>`;
         }
 
-        // CATEGORIES PAGE
         if(tab === 'categories') {
             root.innerHTML = `
                 <div class="form-card" style="max-width: 100%;">
@@ -240,13 +244,11 @@ const ui = {
                 </div>`;
         }
 
-        // REPORTS PAGE
         if(tab === 'reports') {
             root.innerHTML = `
                 <div class="form-card" style="text-align:center; padding:50px; max-width: 100%;">
                     <i class="fa-solid fa-file-invoice" style="font-size:3rem; color:var(--accent-blue); margin-bottom:20px;"></i>
                     <h3>Audit Report Generation</h3>
-                    <p style="color:var(--text-muted); margin-bottom:25px;">Ready to generate official inventory status for BHC Indangan.</p>
                     <button class="btn-submit" style="max-width:300px; margin:0 auto;" onclick="window.print()">
                         <i class="fa-solid fa-print"></i> Generate PDF Report
                     </button>
@@ -260,27 +262,25 @@ const ui = {
         const c = document.getElementById('c').value;
         const q = parseInt(document.getElementById('q').value);
         const e = document.getElementById('e').value;
-        if(n && q && c) { 
-            app.saveMed(n, mg, c, q, e); 
-        } else {
-            alert("Required: Name, Category, and Quantity.");
-        }
+        if(n && q && c) app.saveMed(n, mg, c, q, e);
+        else alert("Fill in required fields.");
     },
 
     async dispense(id, currentQty, name) {
-        const v = prompt(`Dispense ${name}?\nEnter quantity to remove from stock:`);
-        if(v && !isNaN(v)) { 
-            const amountToRemove = parseInt(v);
-            const newQty = currentQty - amountToRemove;
+        const v = prompt(`Dispense ${name}?\nCurrent Stock: ${currentQty}\nHow many units to remove?`);
+        if(v !== null && v !== "" && !isNaN(v)) { 
+            const amount = parseInt(v);
+            const newQty = currentQty - amount;
             
-            if(newQty < 0) return alert("Error: Insufficient stock for this request.");
+            if(newQty < 0) return alert("Insufficient stock!");
             
-            // We await the update so the database is ready before we reload the view
-            await app.updateQty(id, newQty);
-            this.view('inventory'); 
+            const success = await app.updateQty(id, newQty);
+            if(success) {
+                // Force UI to redraw
+                this.view('inventory');
+            }
         }
     }
 };
 
-// Initial run
 app.checkSession();
