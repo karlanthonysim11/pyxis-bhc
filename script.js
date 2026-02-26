@@ -1,4 +1,4 @@
-// 1. Initialize Supabase - REPLACE WITH YOUR ACTUAL KEYS FROM SUPABASE SETTINGS
+// 1. Initialize Supabase
 const supabaseUrl = 'https://ahofyrpymxbqlnvhrbtq.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFob2Z5cnB5bXhicWxudmhyYnRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTIwNjAsImV4cCI6MjA4NzUyODA2MH0.9Q07cxQoRMHMQfczSk5DTzcdntJDFihPYxsur1bGDnc';
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -8,7 +8,15 @@ let inventory = [];
 let categories = [];
 
 const app = {
-    // FETCH: Gets data from Supabase tables
+    // NEW: Check if user was already logged in before
+    checkSession() {
+        const isLoggedIn = localStorage.getItem('pyxis_logged_in');
+        if (isLoggedIn === 'true') {
+            this.showAppInterface();
+            this.init();
+        }
+    },
+
     async init() {
         try {
             const { data: invData, error: invErr } = await _supabase.from('inventory').select('*').order('name');
@@ -24,23 +32,32 @@ const app = {
             console.log("System initialized with Supabase Cloud Data.");
         } catch (err) {
             console.error("Fetch error:", err);
-            alert("Connection Error: Check your Supabase API keys and SQL table setup.");
+            alert("Connection Error: Check your Supabase setup.");
         }
+    },
+
+    showAppInterface() {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app-interface').classList.remove('hidden');
     },
 
     async login() {
         const user = document.getElementById('username').value.toLowerCase();
-        // For a health center app, 'admin' triggers the cloud sync
         if(user === 'admin') {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-interface').classList.remove('hidden');
+            localStorage.setItem('pyxis_logged_in', 'true'); // Remember the user
+            this.showAppInterface();
             await this.init(); 
         } else {
             alert("Access Denied");
         }
     },
 
-    // CLOUD SAVE: Inserts new row into 'inventory' table
+    // Add a Logout function if you want to clear the session
+    logout() {
+        localStorage.removeItem('pyxis_logged_in');
+        window.location.reload();
+    },
+
     async saveMed(n, mg, c, q, e) {
         const { error } = await _supabase
             .from('inventory')
@@ -48,20 +65,16 @@ const app = {
             
         if(!error) {
             await this.init();
-        } else {
-            console.error("Save error:", error);
         }
     },
 
-    // CLOUD DELETE: Removes item by ID
     async deleteItem(id) {
-        if(confirm(`Delete this item permanently from the cloud?`)) {
+        if(confirm(`Delete this item permanently?`)) {
             const { error } = await _supabase.from('inventory').delete().eq('id', id);
             if(!error) await this.init();
         }
     },
 
-    // CLOUD UPDATE: Used for dispensing
     async updateQty(id, newQty) {
         const { error } = await _supabase.from('inventory').update({ qty: newQty }).eq('id', id);
         if(!error) await this.init();
@@ -98,15 +111,16 @@ const ui = {
 
         if(tab === 'dashboard') {
             const totalStock = inventory.reduce((a,b) => a + (parseInt(b.qty) || 0), 0);
+            const lowItems = inventory.filter(m => m.qty < 10).length;
             root.innerHTML = `
                 <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:25px; margin-bottom:30px;">
                     <div class="stat-box"><h2>${inventory.length}</h2><p>Medicines Tracked</p></div>
                     <div class="stat-box"><h2>${totalStock}</h2><p>Total Units</p></div>
-                    <div class="stat-box"><h2 style="color:#ef4444">${inventory.filter(m => m.qty < 10).length}</h2><p>Low Stock</p></div>
+                    <div class="stat-box"><h2 style="color:#ef4444">${lowItems}</h2><p>Low Stock</p></div>
                 </div>
                 <div class="white-card">
                     <h3>System Status: Cloud Sync Active</h3>
-                    <p style="color:#64748b; margin-top:10px;">Connected to Supabase. Data is shared across all devices.</p>
+                    ${lowItems > 0 ? `<p style="color:#ef4444; font-weight:bold;">⚠️ Warning: You have ${lowItems} items low on stock!</p>` : `<p style="color:green;">✅ All stock levels are sufficient.</p>`}
                 </div>`;
         }
 
@@ -115,12 +129,15 @@ const ui = {
                 <div class="white-card">
                     <table>
                         <thead><tr><th>Medicine Name</th><th>Dosage</th><th>Category</th><th>Stock</th><th>Expiry</th><th>Actions</th></tr></thead>
-                        <tbody>${inventory.map((m) => `
-                            <tr>
-                                <td><b>${m.name}</b></td>
+                        <tbody>${inventory.map((m) => {
+                            // LOW STOCK FEATURE: Highlights row in light red if qty < 10
+                            const isLow = m.qty < 10;
+                            return `
+                            <tr style="${isLow ? 'background-color: #fef2f2;' : ''}">
+                                <td><b>${m.name}</b> ${isLow ? '⚠️' : ''}</td>
                                 <td><span style="color:var(--accent-blue)">${m.mg || '---'} mg</span></td>
                                 <td>${m.cat}</td>
-                                <td><span style="color:${m.qty < 10 ? '#ef4444' : 'green'};font-weight:bold">${m.qty} Units</span></td>
+                                <td><span style="color:${isLow ? '#ef4444' : 'green'};font-weight:bold">${m.qty} Units</span></td>
                                 <td style="${this.getExpiryStyle(m.exp)}">${m.exp || '---'}</td>
                                 <td>
                                     <span style="color:var(--accent-blue);cursor:pointer;font-weight:600;margin-right:15px;" 
@@ -128,7 +145,8 @@ const ui = {
                                     <span style="color:#ef4444;cursor:pointer;font-weight:600" 
                                           onclick="app.deleteItem('${m.id}')">Delete</span>
                                 </td>
-                            </tr>`).join('')}</tbody>
+                            </tr>`;
+                        }).join('')}</tbody>
                     </table>
                 </div>`;
         }
@@ -150,33 +168,8 @@ const ui = {
                 </div>`;
         }
 
-        if(tab === 'categories') {
-            root.innerHTML = `<div class="white-card"><h3>Categories are managed in Supabase dashboard for this version.</h3></div>`;
-        }
-
         if(tab === 'reports') {
-            root.innerHTML = `
-                <div class="white-card">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-                        <div>
-                            <h2 style="margin:0">Inventory Audit Report</h2>
-                            <p style="color:#64748b;font-size:0.9rem">Barangay Indangan - Cloud Records</p>
-                        </div>
-                        <button class="btn-main" style="width:auto;padding:10px 25px" onclick="window.print()">Export PDF</button>
-                    </div>
-                    <table>
-                        <thead><tr><th>Name</th><th>Dosage</th><th>Category</th><th>Count</th><th>Expiry</th><th>Status</th></tr></thead>
-                        <tbody>${inventory.map(m => `
-                            <tr>
-                                <td>${m.name}</td>
-                                <td>${m.mg}mg</td>
-                                <td>${m.cat}</td>
-                                <td>${m.qty}</td>
-                                <td style="${this.getExpiryStyle(m.exp)}">${m.exp}</td>
-                                <td>${m.qty < 10 ? 'LOW STOCK' : 'OK'}</td>
-                            </tr>`).join('')}</tbody>
-                    </table>
-                </div>`;
+            root.innerHTML = `<div class="white-card"><h2>Audit Report Ready</h2><button class="btn-main" onclick="window.print()">Print Report</button></div>`;
         }
     },
 
@@ -193,7 +186,7 @@ const ui = {
     },
 
     dispense(id, currentQty, name) {
-        const v = prompt(`Dispense ${name}? Quantity:`);
+        const v = prompt(`Dispense ${name}? Enter quantity to remove:`);
         if(v && !isNaN(v)) { 
             const newQty = currentQty - parseInt(v);
             if(newQty < 0) return alert("Insufficient stock!");
@@ -202,3 +195,6 @@ const ui = {
         }
     }
 };
+
+// INITIALIZE: Check if user is already logged in on page load
+app.checkSession();
