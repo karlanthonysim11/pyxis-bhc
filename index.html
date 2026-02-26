@@ -6,7 +6,7 @@
     <title>PYXIS | BHC Inventory</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -16,15 +16,28 @@
             <div class="auth-logo">
                 <i class="fa-solid fa-staff-snake"></i>
                 <h1>PYXIS</h1>
-                <p>Barangay Health Center Inventory</p>
+                <p>Pharmacy Management System</p>
             </div>
+            
             <div class="auth-form">
-                <input type="text" id="username" placeholder="Username" spellcheck="false" autocomplete="off">
-                <input type="password" id="password" placeholder="Password">
-                <button onclick="app.login()" class="btn-main">Initialize System</button>
+                <div class="input-field" style="margin-bottom: 20px;">
+                    <label>Admin Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" spellcheck="false" autocomplete="off">
+                </div>
+                
+                <div class="input-field" style="margin-bottom: 25px;">
+                    <label>Access Password</label>
+                    <input type="password" id="password" placeholder="••••••••">
+                </div>
+                
+                <button onclick="app.login()" class="btn-submit">
+                    <i class="fa-solid fa-right-to-bracket"></i> Sign In to Portal
+                </button>
             </div>
-            <div style="margin-top: 20px; color: #64748b; font-size: 0.8rem;">
-                <i class="fa-solid fa-lock"></i> Secured Local Access
+
+            <div style="margin-top: 30px; color: #94a3b8; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <i class="fa-solid fa-shield-halved"></i> 
+                <span>Secured Local Cloud Access</span>
             </div>
         </div>
     </div>
@@ -33,7 +46,7 @@
         <aside class="sidebar">
             <div class="sidebar-top">
                 <div class="sidebar-brand">
-                    <span>PYXIS</span>
+                    <span>PYXIS<span>.</span></span>
                 </div>
                 <nav class="nav-stack">
                     <div class="nav-link" onclick="ui.view('dashboard')" id="tab-dashboard">
@@ -55,7 +68,7 @@
             </div>
             
             <div class="sidebar-footer">
-                <div class="logout-action" onclick="app.logout()" style="cursor: pointer;">
+                <div class="nav-link logout-action" onclick="app.logout()">
                     <i class="fa-solid fa-right-from-bracket"></i> Sign Out
                 </div>
             </div>
@@ -63,7 +76,10 @@
 
         <main class="main-body">
             <header class="top-nav">
-                <h2 id="view-title">DASHBOARD</h2>
+                <div class="nav-left">
+                    <span id="view-title">DASHBOARD</span>
+                </div>
+                
                 <div class="header-tools">
                     <div class="notif-wrapper">
                         <i class="fa-regular fa-bell"></i>

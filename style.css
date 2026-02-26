@@ -13,12 +13,56 @@
 body { background: var(--bg-light); color: var(--text-dark); height: 100vh; overflow: hidden; }
 .hidden { display: none !important; }
 
-/* --- LOGIN PAGE (Auth) --- */
-.auth-page { height: 100vh; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; align-items: center; justify-content: center; }
-.auth-card { background: white; width: 420px; padding: 50px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-.auth-logo i { font-size: 3rem; color: var(--accent-blue); margin-bottom: 10px; }
-.auth-logo h1 { font-size: 2.2rem; letter-spacing: -2px; font-weight: 800; color: #1e293b; }
-.auth-logo p { color: var(--text-muted); margin-bottom: 35px; font-size: 0.95rem; }
+/* --- LOGIN PAGE (Updated to match New Supply Card) --- */
+.auth-page { 
+    height: 100vh; 
+    background: #f1f5f9; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+
+.auth-card { 
+    background: white; 
+    width: 450px; 
+    padding: 60px 50px; 
+    border-radius: 28px; /* Extra rounded to match your images */
+    text-align: center; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05); /* Softer shadow */
+    border: 1px solid var(--border);
+}
+
+.auth-logo i { font-size: 3.5rem; color: var(--accent-blue); margin-bottom: 20px; }
+.auth-logo h1 { font-size: 2.2rem; letter-spacing: -1.5px; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
+.auth-logo p { color: var(--text-muted); margin-bottom: 40px; font-size: 1rem; }
+
+/* LOGIN FORM INPUTS */
+.auth-form label {
+    display: block;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #475569;
+    margin-bottom: 8px;
+}
+
+.auth-form input { 
+    width: 100%; 
+    padding: 14px 18px; 
+    margin-bottom: 20px; 
+    border: 2px solid #f1f5f9; 
+    background: #f8fafc;
+    border-radius: 14px; 
+    font-size: 1rem; 
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.auth-form input:focus { 
+    border-color: var(--accent-blue); 
+    background: white;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); 
+}
 
 /* --- MAIN LAYOUT --- */
 .app-shell { display: flex; height: 100vh; }
