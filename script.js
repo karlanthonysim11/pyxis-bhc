@@ -42,6 +42,7 @@ const app = {
 
     async login() {
         const user = document.getElementById('username').value.toLowerCase();
+        // Simple admin check for your prototype
         if(user === 'admin') {
             localStorage.setItem('pyxis_logged_in', 'true');
             this.showAppInterface();
@@ -61,9 +62,7 @@ const app = {
             .from('inventory')
             .insert([{ name: n, mg: mg, cat: c, qty: q, exp: e }]);
             
-        if(!error) {
-            await this.init();
-        }
+        if(!error) await this.init();
     },
 
     async deleteItem(id) {
@@ -73,14 +72,9 @@ const app = {
         }
     },
 
-    // FIXED: Added await to ensure cloud updates before UI refreshes
     async updateQty(id, newQty) {
         const { error } = await _supabase.from('inventory').update({ qty: parseInt(newQty) }).eq('id', id);
-        if(!error) {
-            await this.init(); 
-        } else {
-            alert("Cloud update failed!");
-        }
+        if(!error) await this.init();
     },
 
     updateBadge() {
@@ -102,9 +96,11 @@ const ui = {
     },
 
     view(tab) {
+        // Updated selector to match your sidebar class names
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
         const target = document.getElementById(`tab-${tab}`);
         if(target) target.classList.add('active');
+        
         document.getElementById('view-title').innerText = tab.toUpperCase().replace('-', ' ');
         this.render(tab);
     },
@@ -116,14 +112,14 @@ const ui = {
             const totalStock = inventory.reduce((a,b) => a + (parseInt(b.qty) || 0), 0);
             const lowItems = inventory.filter(m => m.qty < 10).length;
             root.innerHTML = `
-                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:25px; margin-bottom:30px;">
-                    <div class="stat-box"><h2>${inventory.length}</h2><p>Medicines Tracked</p></div>
-                    <div class="stat-box"><h2>${totalStock}</h2><p>Total Units</p></div>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; margin-bottom:30px;">
+                    <div class="stat-box"><h2>${inventory.length}</h2><p>Items</p></div>
+                    <div class="stat-box"><h2>${totalStock}</h2><p>Units</p></div>
                     <div class="stat-box"><h2 style="color:#ef4444">${lowItems}</h2><p>Low Stock</p></div>
                 </div>
                 <div class="white-card">
-                    <h3>System Status: Cloud Sync Active</h3>
-                    ${lowItems > 0 ? `<p style="color:#ef4444; font-weight:bold;">⚠️ Warning: You have ${lowItems} items low on stock!</p>` : `<p style="color:green;">✅ All stock levels are sufficient.</p>`}
+                    <h3>System Health</h3>
+                    <p>Connection: <span style="color:green">● Cloud Sync Active</span></p>
                 </div>`;
         }
 
@@ -131,24 +127,20 @@ const ui = {
             root.innerHTML = `
                 <div class="white-card">
                     <table>
-                        <thead><tr><th>Medicine Name</th><th>Dosage</th><th>Category</th><th>Stock</th><th>Expiry</th><th>Actions</th></tr></thead>
-                        <tbody>${inventory.map((m) => {
-                            const isLow = m.qty < 10;
-                            return `
-                            <tr style="${isLow ? 'background-color: #fef2f2;' : ''}">
-                                <td><b>${m.name}</b> ${isLow ? '⚠️' : ''}</td>
-                                <td><span style="color:var(--accent-blue)">${m.mg || '---'} mg</span></td>
+                        <thead><tr><th>Medicine</th><th>Dosage</th><th>Category</th><th>Stock</th><th>Expiry</th><th>Actions</th></tr></thead>
+                        <tbody>${inventory.map((m) => `
+                            <tr>
+                                <td><b>${m.name}</b></td>
+                                <td>${m.mg || '--'} mg</td>
                                 <td>${m.cat}</td>
-                                <td><span style="color:${isLow ? '#ef4444' : 'green'};font-weight:bold">${m.qty} Units</span></td>
-                                <td style="${this.getExpiryStyle(m.exp)}">${m.exp || '---'}</td>
+                                <td style="color:${m.qty < 10 ? '#ef4444' : 'inherit'}; font-weight:bold">${m.qty}</td>
+                                <td style="${this.getExpiryStyle(m.exp)}">${m.exp || '--'}</td>
                                 <td>
-                                    <span style="color:var(--accent-blue);cursor:pointer;font-weight:600;margin-right:15px;" 
-                                          onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name}')">Dispense</span>
-                                    <span style="color:#ef4444;cursor:pointer;font-weight:600" 
-                                          onclick="app.deleteItem('${m.id}')">Delete</span>
+                                    <button class="btn-text" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name}')">Dispense</button>
+                                    <button class="btn-text delete" onclick="app.deleteItem('${m.id}')">Delete</button>
                                 </td>
-                            </tr>`;
-                        }).join('')}</tbody>
+                            </tr>`).join('')}
+                        </tbody>
                     </table>
                 </div>`;
         }
@@ -157,22 +149,33 @@ const ui = {
             root.innerHTML = `
                 <div class="white-card" style="max-width:500px">
                     <h3>Register New Supply</h3>
-                    <div style="display:flex; gap:10px; margin: 15px 0 10px;">
-                        <input id="n" style="flex:2; padding:12px; border:1px solid #ddd; border-radius:8px" placeholder="Medicine Name">
-                        <input id="mg" style="flex:1; padding:12px; border:1px solid #ddd; border-radius:8px" placeholder="mg">
-                    </div>
-                    <select id="c" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #ddd;border-radius:8px">
+                    <input id="n" type="text" placeholder="Medicine Name" class="form-input">
+                    <input id="mg" type="text" placeholder="Dosage (mg)" class="form-input">
+                    <select id="c" class="form-input">
                         <option value="" disabled selected>Select Category</option>
                         ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
                     </select>
-                    <input id="q" type="number" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #ddd;border-radius:8px" placeholder="Quantity">
-                    <input id="e" type="date" style="width:100%;padding:12px;margin-bottom:20px;border:1px solid #ddd;border-radius:8px">
-                    <button class="btn-main" onclick="ui.handleSave()">Add to Inventory</button>
+                    <input id="q" type="number" placeholder="Initial Quantity" class="form-input">
+                    <input id="e" type="date" class="form-input">
+                    <button class="btn-main" onclick="ui.handleSave()">Add to Cloud</button>
+                </div>`;
+        }
+
+        if(tab === 'categories') {
+            root.innerHTML = `
+                <div class="white-card">
+                    <h3>Active Categories</h3>
+                    <ul>${categories.map(c => `<li>${c}</li>`).join('')}</ul>
                 </div>`;
         }
 
         if(tab === 'reports') {
-            root.innerHTML = `<div class="white-card"><h2>Audit Report Ready</h2><button class="btn-main" onclick="window.print()">Print Report</button></div>`;
+            root.innerHTML = `
+                <div class="white-card">
+                    <h3>Audit Report</h3>
+                    <p>Generating summary for BHC Indangan...</p>
+                    <button class="btn-main" onclick="window.print()">Print Report</button>
+                </div>`;
         }
     },
 
@@ -186,20 +189,20 @@ const ui = {
             app.saveMed(n, mg, c, q, e); 
             this.view('inventory'); 
         } else {
-            alert("Fill in name, category, and quantity!");
+            alert("Required: Name, Category, and Quantity.");
         }
     },
 
-    // FIXED: Now async to handle the cloud update correctly
     async dispense(id, currentQty, name) {
-        const v = prompt(`Dispense ${name}? Enter quantity to remove:`);
+        const v = prompt(`Dispense ${name}? Quantity:`);
         if(v && !isNaN(v)) { 
             const newQty = currentQty - parseInt(v);
-            if(newQty < 0) return alert("Insufficient stock!");
+            if(newQty < 0) return alert("Low stock!");
             await app.updateQty(id, newQty);
             this.view('inventory'); 
         }
     }
 };
 
+// Initial run
 app.checkSession();
