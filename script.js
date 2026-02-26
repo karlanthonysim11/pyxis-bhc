@@ -8,7 +8,6 @@ let inventory = [];
 let categories = [];
 
 const app = {
-    // NEW: Check if user was already logged in before
     checkSession() {
         const isLoggedIn = localStorage.getItem('pyxis_logged_in');
         if (isLoggedIn === 'true') {
@@ -44,7 +43,7 @@ const app = {
     async login() {
         const user = document.getElementById('username').value.toLowerCase();
         if(user === 'admin') {
-            localStorage.setItem('pyxis_logged_in', 'true'); // Remember the user
+            localStorage.setItem('pyxis_logged_in', 'true');
             this.showAppInterface();
             await this.init(); 
         } else {
@@ -52,7 +51,6 @@ const app = {
         }
     },
 
-    // Add a Logout function if you want to clear the session
     logout() {
         localStorage.removeItem('pyxis_logged_in');
         window.location.reload();
@@ -75,9 +73,14 @@ const app = {
         }
     },
 
+    // FIXED: Added await to ensure cloud updates before UI refreshes
     async updateQty(id, newQty) {
-        const { error } = await _supabase.from('inventory').update({ qty: newQty }).eq('id', id);
-        if(!error) await this.init();
+        const { error } = await _supabase.from('inventory').update({ qty: parseInt(newQty) }).eq('id', id);
+        if(!error) {
+            await this.init(); 
+        } else {
+            alert("Cloud update failed!");
+        }
     },
 
     updateBadge() {
@@ -130,7 +133,6 @@ const ui = {
                     <table>
                         <thead><tr><th>Medicine Name</th><th>Dosage</th><th>Category</th><th>Stock</th><th>Expiry</th><th>Actions</th></tr></thead>
                         <tbody>${inventory.map((m) => {
-                            // LOW STOCK FEATURE: Highlights row in light red if qty < 10
                             const isLow = m.qty < 10;
                             return `
                             <tr style="${isLow ? 'background-color: #fef2f2;' : ''}">
@@ -160,7 +162,8 @@ const ui = {
                         <input id="mg" style="flex:1; padding:12px; border:1px solid #ddd; border-radius:8px" placeholder="mg">
                     </div>
                     <select id="c" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #ddd;border-radius:8px">
-                        ${categories.map(cat => `<option>${cat}</option>`).join('')}
+                        <option value="" disabled selected>Select Category</option>
+                        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
                     </select>
                     <input id="q" type="number" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #ddd;border-radius:8px" placeholder="Quantity">
                     <input id="e" type="date" style="width:100%;padding:12px;margin-bottom:20px;border:1px solid #ddd;border-radius:8px">
@@ -179,22 +182,24 @@ const ui = {
         const c = document.getElementById('c').value;
         const q = parseInt(document.getElementById('q').value);
         const e = document.getElementById('e').value;
-        if(n && q) { 
+        if(n && q && c) { 
             app.saveMed(n, mg, c, q, e); 
             this.view('inventory'); 
+        } else {
+            alert("Fill in name, category, and quantity!");
         }
     },
 
-    dispense(id, currentQty, name) {
+    // FIXED: Now async to handle the cloud update correctly
+    async dispense(id, currentQty, name) {
         const v = prompt(`Dispense ${name}? Enter quantity to remove:`);
         if(v && !isNaN(v)) { 
             const newQty = currentQty - parseInt(v);
             if(newQty < 0) return alert("Insufficient stock!");
-            app.updateQty(id, newQty);
+            await app.updateQty(id, newQty);
             this.view('inventory'); 
         }
     }
 };
 
-// INITIALIZE: Check if user is already logged in on page load
 app.checkSession();
