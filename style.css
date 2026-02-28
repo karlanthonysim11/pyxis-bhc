@@ -7,7 +7,7 @@
     --text-muted: #64748b;
     --border: #e2e8f0;
     --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --danger: #ef4444; /* Added for Red Alerts */
+    --danger: #ef4444; /* Standard Red for Alerts */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
@@ -89,7 +89,7 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     transition: border-color 0.3s ease, border-width 0.3s ease;
 }
 
-/* GLOBAL TOP NAV ALERT */
+/* GLOBAL TOP NAV ALERT: When criticalItems > 0 */
 .nav-alert {
     border-bottom: 3px solid var(--danger) !important;
 }
@@ -136,10 +136,10 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .modern-table th { background: #f8fafc; padding: 18px 20px; text-align: left; color: #94a3b8; font-size: 0.75rem; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
 .modern-table td { padding: 20px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 
-/* WHOLE ROW CRITICAL ALERT */
+/* WHOLE ROW CRITICAL ALERT: Applies if item is Low Stock OR Expiring */
 .row-critical {
-    background-color: #fff1f2 !important; /* Soft Red Background */
-    border-left: 4px solid var(--danger);
+    background-color: #fff1f2 !important; 
+    border-left: 5px solid var(--danger);
 }
 
 /* --- STOCK INDICATORS --- */
@@ -154,6 +154,7 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; 
     transition: 0.3s; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;
 }
+.btn-submit:hover { background: var(--accent-dark); }
 
 /* --- SIDEBAR NAV --- */
 .nav-link { 
