@@ -201,7 +201,7 @@ const ui = {
             const expiringSoon = inventory.filter(m => {
                 if(!m.exp) return false;
                 const diff = Math.ceil((new Date(m.exp) - new Date()) / (1000 * 60 * 60 * 24));
-                return diff <= 30;
+                return diff <= 30 && diff >= 0;
             }).length;
 
             root.innerHTML = `
@@ -219,11 +219,11 @@ const ui = {
                         <div class="stat-data"><h3>${totalStock}</h3><p>Total Units</p></div>
                     </div>
                     <div class="stat-card">
-                        <div class="icon-circle bg-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="icon-circle bg-red" style="${lowItems > 0 ? 'animation: pulse 2s infinite;' : ''}"><i class="fa-solid fa-triangle-exclamation"></i></div>
                         <div class="stat-data"><h3 style="color:#ef4444">${lowItems}</h3><p>Low Stock</p></div>
                     </div>
                     <div class="stat-card">
-                        <div class="icon-circle" style="background:#fef2f2; color:#ef4444;"><i class="fa-solid fa-calendar-xmark"></i></div>
+                        <div class="icon-circle bg-red" style="${expiringSoon > 0 ? 'animation: pulse 2s infinite;' : ''}"><i class="fa-solid fa-calendar-xmark"></i></div>
                         <div class="stat-data"><h3 style="color:#ef4444">${expiringSoon}</h3><p>Near Expiry</p></div>
                     </div>
                 </div>
@@ -297,7 +297,7 @@ const ui = {
         const expStatus = this.getExpiryStatus(m.exp);
         const isLow = m.qty < 10;
         return `
-            <tr>
+            <tr class="${(isLow || expStatus.isCritical) ? 'row-critical' : ''}">
                 <td>
                     <span style="display:block; font-weight:700;">${m.name}</span>
                     ${isMed ? `<span style="font-size:0.8rem; color:#64748b;">${m.mg} mg</span>` : ''}

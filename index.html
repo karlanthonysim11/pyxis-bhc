@@ -58,11 +58,6 @@
                     <div class="nav-link" onclick="ui.view('add')" id="tab-add">
                         <i class="fa-solid fa-square-plus"></i> New Supply
                     </div>
-                    
-                    <div class="nav-link" onclick="ui.view('supplies')" id="tab-supplies">
-                        <i class="fa-solid fa-briefcase-medical"></i> Medical supplies
-                    </div>
-
                     <div class="nav-link" onclick="ui.view('categories')" id="tab-categories">
                         <i class="fa-solid fa-tags"></i> Categories
                     </div>
@@ -73,7 +68,7 @@
             </div>
             
             <div class="sidebar-footer">
-                <div class="nav-link sign-out" onclick="app.logout()">
+                <div class="nav-link logout-action" onclick="app.logout()">
                     <i class="fa-solid fa-right-from-bracket"></i> Sign Out
                 </div>
             </div>
@@ -113,10 +108,6 @@
                 <div><h3 id="stat-count">0</h3><p>Medicines</p></div>
             </div>
             <div class="stat-card">
-                <div class="icon-circle bg-blue"><i class="fa-solid fa-briefcase-medical"></i></div>
-                <div><h3 id="stat-supplies">0</h3><p>Supplies</p></div>
-            </div>
-            <div class="stat-card">
                 <div class="icon-circle bg-green"><i class="fa-solid fa-boxes-stacked"></i></div>
                 <div><h3 id="stat-units">0</h3><p>Total Units</p></div>
             </div>
@@ -140,31 +131,6 @@
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">
                 Secure connection established with Supabase PostgreSQL.
             </p>
-        </div>
-    </template>
-
-    <template id="tpl-supplies">
-        <div class="search-container" style="margin-bottom: 20px;">
-            <div class="form-group" style="max-width: 400px; position: relative;">
-                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 15px; color: var(--text-muted);"></i>
-                <input type="text" id="search-bar-supplies" placeholder="Search medical supplies..." 
-                       onkeyup="ui.filterSupplies()" 
-                       style="padding-left: 45px; border-radius: 12px;">
-            </div>
-        </div>
-        <div class="table-card">
-            <table class="modern-table">
-                <thead>
-                    <tr>
-                        <th>SUPPLY ITEM</th>
-                        <th>CATEGORY</th>
-                        <th>STOCK LEVEL</th>
-                        <th>EXPIRY</th>
-                        <th style="text-align:right">ACTIONS</th>
-                    </tr>
-                </thead>
-                <tbody id="supplies-table-body"></tbody>
-            </table>
         </div>
     </template>
 
@@ -202,12 +168,12 @@
             <div style="margin-top: 30px;">
                 <div class="form-grid">
                     <div class="form-group full-width">
-                        <label>Item Name</label>
+                        <label>Medicine Name</label>
                         <input type="text" id="n" placeholder="Enter name" required autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label>Dosage (mg) <small>(Leave blank for supplies)</small></label>
-                        <input type="text" id="mg" placeholder="e.g. 500">
+                        <label>Dosage (mg)</label>
+                        <input type="text" id="mg" placeholder="500">
                     </div>
                     <div class="form-group">
                         <label>Category</label>
