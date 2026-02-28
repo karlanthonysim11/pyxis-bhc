@@ -23,58 +23,17 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     color: var(--text-dark);
 }
 
-.sidebar-brand span span { 
-    color: var(--accent-blue); 
-}
+.sidebar-brand span span { color: var(--accent-blue); }
 
 /* --- LOGIN PAGE --- */
 .auth-page { 
-    height: 100vh; 
-    background: #f1f5f9; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
+    height: 100vh; background: #f1f5f9; 
+    display: flex; align-items: center; justify-content: center; 
 }
 
 .auth-card { 
-    background: white; 
-    width: 450px; 
-    padding: 60px 50px; 
-    border-radius: 28px; 
-    text-align: center; 
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-    border: 1px solid var(--border);
-}
-
-.auth-logo i { font-size: 3.5rem; color: var(--accent-blue); margin-bottom: 20px; }
-.auth-logo h1 { font-size: 2.2rem; letter-spacing: -1.5px; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
-.auth-logo p { color: var(--text-muted); margin-bottom: 40px; font-size: 1rem; }
-
-.auth-form label {
-    display: block;
-    text-align: left;
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: #475569;
-    margin-bottom: 8px;
-}
-
-.auth-form input { 
-    width: 100%; 
-    padding: 14px 18px; 
-    margin-bottom: 20px; 
-    border: 2px solid #f1f5f9; 
-    background: #f8fafc;
-    border-radius: 14px; 
-    font-size: 1rem; 
-    outline: none;
-    transition: all 0.2s ease;
-}
-
-.auth-form input:focus { 
-    border-color: var(--accent-blue); 
-    background: white;
-    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); 
+    background: white; width: 450px; padding: 60px 50px; border-radius: 28px; 
+    text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border);
 }
 
 /* --- MAIN LAYOUT --- */
@@ -86,31 +45,19 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .top-nav { 
     height: 80px; background: white; border-bottom: 1px solid var(--border); 
     display: flex; align-items: center; justify-content: space-between; padding: 0 40px;
-    transition: border-color 0.3s ease, border-width 0.3s ease;
+    transition: all 0.3s ease;
 }
 
-/* GLOBAL TOP NAV ALERT: When criticalItems > 0 */
-.nav-alert {
-    border-bottom: 3px solid var(--danger) !important;
-}
-
+.nav-alert { border-bottom: 3px solid var(--danger) !important; }
 #view-title { font-size: 1.1rem; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
 
-/* --- NOTIFICATION BADGE STYLING --- */
 .nav-icons { display: flex; align-items: center; gap: 20px; }
 .icon-btn { position: relative; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; }
 
 #alert-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: var(--accent-blue);
-    color: white;
-    font-size: 0.7rem;
-    padding: 2px 6px;
-    border-radius: 50%;
-    font-weight: 800;
-    border: 2px solid white;
+    position: absolute; top: -8px; right: -8px; background: var(--accent-blue);
+    color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 50%;
+    font-weight: 800; border: 2px solid white;
 }
 
 /* --- CONTENT AREA --- */
@@ -124,11 +71,43 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     transition: transform 0.2s ease;
 }
 .stat-card:hover { transform: translateY(-5px); }
-.icon-circle { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 
+.icon-circle { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 .bg-blue { background: #e0f2fe; color: #0ea5e9; }
 .bg-green { background: #dcfce7; color: #22c55e; }
 .bg-red { background: #fef2f2; color: #ef4444; }
+
+/* --- MODERN FORM STYLING (The pill-shaped inputs) --- */
+.form-card { 
+    background: white; max-width: 750px; margin: 0 auto; padding: 50px; 
+    border-radius: 28px; box-shadow: var(--card-shadow); border: 1px solid var(--border); 
+}
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+.full-width { grid-column: span 2; }
+
+.form-group label {
+    display: block; text-align: left; font-weight: 700; font-size: 0.85rem; 
+    color: #64748b; margin-bottom: 10px; padding-left: 5px;
+}
+
+.form-group input, .form-group select { 
+    width: 100%; padding: 16px 20px; border: 1px solid #f1f5f9; 
+    background: #f8fafc; border-radius: 16px; font-size: 1rem; 
+    outline: none; transition: all 0.2s ease;
+}
+
+.form-group input:focus, .form-group select:focus { 
+    border-color: var(--accent-blue); background: white;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); 
+}
+
+.btn-submit { 
+    width: 100%; padding: 18px; background: var(--accent-blue); color: white; border: none; 
+    border-radius: 16px; font-weight: 700; font-size: 1.1rem; cursor: pointer; 
+    transition: 0.3s; margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.btn-submit:hover { background: var(--accent-dark); transform: translateY(-2px); }
 
 /* --- TABLE STYLING --- */
 .table-card { background: white; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--card-shadow); overflow: hidden; }
@@ -136,25 +115,10 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .modern-table th { background: #f8fafc; padding: 18px 20px; text-align: left; color: #94a3b8; font-size: 0.75rem; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
 .modern-table td { padding: 20px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 
-/* WHOLE ROW CRITICAL ALERT: Applies if item is Low Stock OR Expiring */
-.row-critical {
-    background-color: #fff1f2 !important; 
-    border-left: 5px solid var(--danger);
-}
-
-/* --- STOCK INDICATORS --- */
+.row-critical { background-color: #fff1f2 !important; border-left: 5px solid var(--danger); }
 .stock-indicator { padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; display: inline-block; }
 .stable { background: #dcfce7; color: #166534; }
 .critical { background: #fee2e2; color: #991b1b; animation: pulse 2s infinite; }
-
-/* --- FORM STYLING --- */
-.form-card { background: white; max-width: 650px; margin: 0 auto; padding: 40px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid var(--border); }
-.btn-submit { 
-    width: 100%; padding: 16px; background: var(--accent-blue); color: white; border: none; 
-    border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; 
-    transition: 0.3s; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;
-}
-.btn-submit:hover { background: var(--accent-dark); }
 
 /* --- SIDEBAR NAV --- */
 .nav-link { 
@@ -164,36 +128,14 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .nav-link:hover { background: #f8fafc; color: var(--text-dark); }
 .nav-link.active { background: #f0f9ff; color: var(--accent-blue); }
 
-/* --- ANIMATIONS & ALERTS --- */
+/* --- ANIMATIONS --- */
+.expiry-warning { color: var(--danger); font-weight: 800; animation: blink-red 2s infinite; }
 
-/* 1. Red Alert for Expiry Dates */
-.expiry-warning {
-    color: var(--danger);
-    font-weight: 800;
-    animation: blink-red 2s infinite;
-}
-
-@keyframes blink-red {
-    0% { opacity: 1; }
-    50% { opacity: 0.4; }
-    100% { opacity: 1; }
-}
-
-/* 2. Notification Bell turning Red */
-.icon-btn i.alert-active {
-    color: var(--danger) !important;
-    animation: pulse-icon 1.5s infinite;
-}
-
-/* 3. Smooth Pulse for Critical Alerts */
+@keyframes blink-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 @keyframes pulse {
     0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
     70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
-
-@keyframes pulse-icon {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.15); }
-    100% { transform: scale(1); }
-}
+@keyframes pulse-icon { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+.icon-btn i.alert-active { color: var(--danger) !important; animation: pulse-icon 1.5s infinite; }

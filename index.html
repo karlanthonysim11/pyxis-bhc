@@ -75,15 +75,17 @@
         </aside>
 
         <main class="main-body">
-            <header class="top-nav">
+            <header id="main-header" class="top-nav">
                 <div class="nav-left">
                     <span id="view-title">DASHBOARD</span>
                 </div>
                 
                 <div class="header-tools">
-                    <div class="notif-wrapper">
-                        <i class="fa-regular fa-bell"></i>
-                        <span id="alert-badge" class="badge">0</span>
+                    <div class="nav-icons">
+                        <div class="icon-btn">
+                            <i class="fa-regular fa-bell" id="notif-bell"></i>
+                            <span id="alert-badge">0</span>
+                        </div>
                     </div>
                     <div class="user-profile">
                         <div class="u-info">
@@ -98,6 +100,47 @@
             <section id="render-area" class="view-content"></section>
         </main>
     </div>
+
+    <template id="tpl-add">
+        <div class="form-card">
+            <div class="form-header">
+                <i class="fa-solid fa-circle-plus"></i>
+                <h2>Register New Supply</h2>
+            </div>
+            <form id="supply-form" onsubmit="app.saveMed(event)">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Medicine Name</label>
+                        <input type="text" id="med-name" placeholder="Enter name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Dosage (mg)</label>
+                        <input type="number" id="med-dosage" placeholder="500" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="med-category" required>
+                            <option value="" disabled selected>Select category</option>
+                            <option value="Antibiotics">Antibiotics</option>
+                            <option value="Painkillers">Painkillers</option>
+                            <option value="Vitamins">Vitamins</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Initial Quantity</label>
+                        <input type="number" id="med-qty" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Expiration Date</label>
+                        <input type="date" id="med-expiry" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Save to Cloud
+                </button>
+            </form>
+        </div>
+    </template>
     
     <script src="script.js"></script>
 </body>
