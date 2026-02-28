@@ -8,6 +8,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Print optimization to hide UI elements during printing */
+        @media print {
+            .sidebar, .top-nav, .btn-submit, .search-container, .nav-icons { display: none !important; }
+            .main-body { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+            .app-shell { display: block !important; }
+            .table-card { box-shadow: none !important; border: 1px solid #eee; }
+            body { background: white !important; }
+        }
+    </style>
 </head>
 <body>
 
@@ -58,6 +68,9 @@
                     <div class="nav-link" onclick="ui.view('add')" id="tab-add">
                         <i class="fa-solid fa-square-plus"></i> New Supply
                     </div>
+                    <div class="nav-link" onclick="ui.view('supplies')" id="tab-supplies">
+                        <i class="fa-solid fa-briefcase-medical"></i> Medical Supplies
+                    </div>
                     <div class="nav-link" onclick="ui.view('categories')" id="tab-categories">
                         <i class="fa-solid fa-tags"></i> Categories
                     </div>
@@ -102,10 +115,14 @@
     </div>
 
     <template id="tpl-dashboard">
-        <div class="stats-row">
+        <div class="stats-row" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px;">
             <div class="stat-card">
                 <div class="icon-circle bg-blue"><i class="fa-solid fa-pills"></i></div>
                 <div><h3 id="stat-count">0</h3><p>Medicines</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="icon-circle" style="background:#e0f2fe; color:#0ea5e9;"><i class="fa-solid fa-briefcase-medical"></i></div>
+                <div><h3 id="stat-supplies">0</h3><p>Supplies</p></div>
             </div>
             <div class="stat-card">
                 <div class="icon-circle bg-green"><i class="fa-solid fa-boxes-stacked"></i></div>
@@ -159,20 +176,45 @@
         </div>
     </template>
 
+    <template id="tpl-supplies">
+        <div class="search-container" style="margin-bottom: 20px;">
+            <div class="form-group" style="max-width: 400px; position: relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 15px; color: var(--text-muted);"></i>
+                <input type="text" id="search-bar-supplies" placeholder="Search supplies..." 
+                       onkeyup="ui.filterSupplies()" 
+                       style="padding-left: 45px; border-radius: 12px;">
+            </div>
+        </div>
+        <div class="table-card">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>SUPPLY ITEM</th>
+                        <th>CATEGORY</th>
+                        <th>STOCK LEVEL</th>
+                        <th>EXPIRY</th>
+                        <th style="text-align:right">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody id="supplies-table-body"></tbody>
+            </table>
+        </div>
+    </template>
+
     <template id="tpl-add">
         <div class="form-card">
             <div class="form-header">
                 <i class="fa-solid fa-circle-plus" style="color: var(--accent-blue);"></i>
-                <h2 style="display: inline; margin-left: 10px;">Register New Supply</h2>
+                <h2 style="display: inline; margin-left: 10px;">Register New Item</h2>
             </div>
             <div style="margin-top: 30px;">
                 <div class="form-grid">
                     <div class="form-group full-width">
-                        <label>Medicine Name</label>
+                        <label>Name</label>
                         <input type="text" id="n" placeholder="Enter name" required autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label>Dosage (mg)</label>
+                        <label>Dosage (mg) <small>(Leave blank for supplies)</small></label>
                         <input type="text" id="mg" placeholder="500">
                     </div>
                     <div class="form-group">
@@ -214,7 +256,39 @@
                 <h2 style="display: inline; margin-left: 10px; font-size: 1.2rem;">Active Categories</h2>
             </div>
             <div id="categories-list" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px;">
-                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="tpl-reports">
+        <div class="form-card" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <h2 style="margin-bottom: 5px;">Pharmacy Audit Report</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Review recent dispensing history and inventory movements.</p>
+            </div>
+            <button class="btn-submit" onclick="window.print()" style="width: auto; padding: 0 30px;">
+                <i class="fa-solid fa-print"></i> Generate PDF
+            </button>
+        </div>
+
+        <div class="table-card">
+            <div class="form-header" style="padding: 20px; border-bottom: 1px solid #f1f5f9;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: var(--accent-blue);"></i>
+                <h3 style="display: inline; margin-left: 10px;">Recent Transactions</h3>
+            </div>
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>DATE & TIME</th>
+                        <th>ITEM NAME</th>
+                        <th>TYPE</th>
+                        <th>QUANTITY</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-table-body">
+                    </tbody>
+            </table>
         </div>
     </template>
     

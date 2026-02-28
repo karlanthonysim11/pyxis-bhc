@@ -31,7 +31,6 @@ const app = {
             const titleElement = document.getElementById('view-title');
             let currentTab = titleElement ? titleElement.innerText.toLowerCase().replace(/\s+/g, '-') : 'dashboard';
             
-            // Safety check for view title mapping
             if (currentTab === 'medical-supplies') currentTab = 'supplies';
             if (currentTab === 'inventory-list') currentTab = 'inventory';
 
@@ -64,6 +63,21 @@ const app = {
         window.location.reload();
     },
 
+    // New Function: Log Transaction
+    async logTransaction(itemName, type, qty, status) {
+        try {
+            await _supabase.from('logs').insert([{ 
+                item_name: itemName, 
+                type: type, 
+                quantity: qty, 
+                status: status,
+                created_at: new Date().toISOString()
+            }]);
+        } catch (err) {
+            console.error("Logging failed:", err);
+        }
+    },
+
     async saveMed(n, mg, c, q, e) {
         const { error } = await _supabase
             .from('inventory')
@@ -71,7 +85,6 @@ const app = {
             
         if(!error) {
             await this.init();
-            // Redirect based on whether it was a medicine or a supply
             if (mg && mg.trim() !== "") ui.view('inventory');
             else ui.view('supplies');
         } else {
@@ -187,11 +200,10 @@ const ui = {
         this.render(tab);
     },
 
-    render(tab) {
+    async render(tab) {
         const root = document.getElementById('render-area');
         if(!root) return;
 
-        // Separate Medicines vs Supplies for filtered views
         const medicines = inventory.filter(m => m.mg && m.mg.trim() !== "");
         const supplies = inventory.filter(m => !m.mg || m.mg.trim() === "");
 
@@ -226,10 +238,6 @@ const ui = {
                         <div class="icon-circle bg-red" style="${expiringSoon > 0 ? 'animation: pulse 2s infinite;' : ''}"><i class="fa-solid fa-calendar-xmark"></i></div>
                         <div class="stat-data"><h3 style="color:#ef4444">${expiringSoon}</h3><p>Near Expiry</p></div>
                     </div>
-                </div>
-                <div class="form-card" style="max-width: 100%; margin-top:20px;">
-                    <div class="form-header"><i class="fa-solid fa-heart-pulse" style="color:var(--accent-blue)"></i><h3>System Health</h3></div>
-                    <p style="margin-top:10px;">Connection: <span style="color:green; font-weight:bold;">● Cloud Sync Active</span></p>
                 </div>`;
         }
 
@@ -289,8 +297,34 @@ const ui = {
         }
 
         if(tab === 'reports') {
-            root.innerHTML = `<div class="form-card" style="text-align:center;"><h3>Audit Reports</h3><button class="btn-submit" onclick="window.print()">Print PDF</button></div>`;
+            root.innerHTML = `
+                <div class="form-card" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+                    <h3>Audit Reports</h3>
+                    <button class="btn-submit" onclick="window.print()" style="width:auto; padding: 0 20px;">Print PDF</button>
+                </div>
+                <div class="table-card">
+                    <table class="modern-table">
+                        <thead><tr><th>Time</th><th>Item</th><th>Action</th><th>Qty</th><th>Status</th></tr></thead>
+                        <tbody id="audit-table-body"><tr><td colspan="5" style="text-align:center;">Loading logs...</td></tr></tbody>
+                    </table>
+                </div>`;
+            this.loadAuditLogs();
         }
+    },
+
+    async loadAuditLogs() {
+        const tbody = document.getElementById('audit-table-body');
+        const { data, error } = await _supabase.from('logs').select('*').order('created_at', { ascending: false }).limit(20);
+        if (error || !data) return;
+        tbody.innerHTML = data.map(log => `
+            <tr>
+                <td>${new Date(log.created_at).toLocaleTimeString()}</td>
+                <td><strong>${log.item_name}</strong></td>
+                <td>Dispensed</td>
+                <td>-${log.quantity}</td>
+                <td><span style="color:green">● Success</span></td>
+            </tr>
+        `).join('');
     },
 
     createRow(m, isMed) {
@@ -329,10 +363,14 @@ const ui = {
     async dispense(id, currentQty, name, redirectTab) {
         const v = prompt(`Dispense ${name}?\nHow many units to remove?`);
         if(v) { 
-            const newQty = parseInt(currentQty) - parseInt(v);
+            const removeQty = parseInt(v);
+            const newQty = parseInt(currentQty) - removeQty;
             if(newQty < 0) return alert("Insufficient stock!");
             const success = await app.updateQty(id, newQty);
-            if(success) this.view(redirectTab);
+            if(success) {
+                await app.logTransaction(name, 'Dispensed', removeQty, 'Success');
+                this.view(redirectTab);
+            }
         }
     }
 };
