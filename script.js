@@ -24,7 +24,6 @@ const app = {
             if (invErr || catErr) throw new Error("Database connection failed");
 
             inventory = invData || [];
-            // Storing full objects to ensure ID is available for deletion
             categories = catData || [];
 
             this.updateBadge();
@@ -96,7 +95,7 @@ const app = {
         return true;
     },
 
-    // --- NEW CATEGORY METHODS ---
+    // --- CATEGORY METHODS ---
     async addCategory() {
         const input = document.getElementById('new-category-name');
         const name = input.value.trim();
@@ -117,14 +116,22 @@ const app = {
     },
 
     async deleteCategory(id, name) {
-        // Validation check for ID
         if(!id || id === 'undefined') {
-            console.error("Delete failed: ID is missing");
             return alert("Error: Could not find category ID. Please refresh.");
         }
 
-        if(confirm(`Delete category "${name}"? This won't delete medicines in this category.`)) {
-            const { error } = await _supabase.from('categories').delete().eq('id', id);
+        // Safety Check: Is this category currently being used by any medicine?
+        const isUsed = inventory.some(m => m.cat === name);
+        if (isUsed) {
+            return alert(`Cannot delete "${name}". There are medicines currently assigned to this category.`);
+        }
+
+        if(confirm(`Delete category "${name}" permanently?`)) {
+            const { error } = await _supabase
+                .from('categories')
+                .delete()
+                .eq('id', id);
+
             if(!error) {
                 await this.init();
                 ui.render('categories');
@@ -353,7 +360,7 @@ const ui = {
                         ${categories.map(c => `
                             <div class="category-pill">
                                 <span>${c.name}</span>
-                                <i class="fa-solid fa-xmark delete-cat" onclick="app.deleteCategory('${c.id}', '${c.name}')"></i>
+                                <i class="fa-solid fa-trash-can delete-cat" onclick="app.deleteCategory('${c.id}', '${c.name}')"></i>
                             </div>
                         `).join('')}
                     </div>
