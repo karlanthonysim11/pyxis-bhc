@@ -10,7 +10,13 @@
     --danger: #ef4444; /* Standard Red for Alerts */
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+}
+
 body { background: var(--bg-light); color: var(--text-dark); height: 100vh; overflow: hidden; }
 .hidden { display: none !important; }
 
@@ -77,38 +83,84 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .bg-green { background: #dcfce7; color: #22c55e; }
 .bg-red { background: #fef2f2; color: #ef4444; }
 
-/* --- MODERN FORM STYLING (Pill-shaped as requested) --- */
+/* --- MODERN FORM STYLING --- */
 .form-card { 
-    background: white; max-width: 750px; margin: 0 auto; padding: 50px; 
-    border-radius: 28px; box-shadow: var(--card-shadow); border: 1px solid var(--border); 
+    background: white; 
+    max-width: 750px; 
+    margin: 0 auto; 
+    padding: 50px; 
+    border-radius: 28px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+    border: 1px solid var(--border); 
+}
+
+.form-header {
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.form-header h2 {
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--text-dark);
 }
 
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
 .full-width { grid-column: span 2; }
 
 .form-group label {
-    display: block; text-align: left; font-weight: 700; font-size: 0.85rem; 
-    color: #64748b; margin-bottom: 10px; padding-left: 5px;
+    display: block; 
+    text-align: left; 
+    font-weight: 700; 
+    font-size: 0.9rem; 
+    color: #475569; 
+    margin-bottom: 10px; 
+    padding-left: 2px;
 }
 
 /* Rounded, light grey inputs from screenshot */
 .form-group input, .form-group select { 
-    width: 100%; padding: 16px 20px; border: 1px solid #f1f5f9; 
-    background: #f8fafc; border-radius: 16px; font-size: 1rem; 
-    outline: none; transition: all 0.2s ease;
+    width: 100%; 
+    padding: 14px 20px; 
+    border: 1px solid transparent; 
+    background: #f4f6f9; 
+    border-radius: 12px; 
+    font-size: 1rem; 
+    color: #334155;
+    outline: none; 
+    transition: all 0.2s ease;
 }
 
 .form-group input:focus, .form-group select:focus { 
-    border-color: var(--accent-blue); background: white;
+    border-color: var(--accent-blue); 
+    background: white;
     box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); 
 }
 
 .btn-submit { 
-    width: 100%; padding: 18px; background: var(--accent-blue); color: white; border: none; 
-    border-radius: 16px; font-weight: 700; font-size: 1.1rem; cursor: pointer; 
-    transition: 0.3s; margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; 
+    padding: 16px; 
+    background: var(--accent-blue); 
+    color: white; 
+    border: none; 
+    border-radius: 14px; 
+    font-weight: 700; 
+    font-size: 1.1rem; 
+    cursor: pointer; 
+    transition: all 0.3s ease; 
+    margin-top: 25px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 12px;
 }
-.btn-submit:hover { background: var(--accent-dark); transform: translateY(-2px); }
+.btn-submit:hover { 
+    background: var(--accent-dark); 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
 
 /* --- TABLE STYLING --- */
 .table-card { background: white; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--card-shadow); overflow: hidden; }
@@ -123,8 +175,17 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 
 /* --- SIDEBAR NAV --- */
 .nav-link { 
-    display: block; text-decoration: none; padding: 16px 30px; margin: 4px 20px; border-radius: 12px; 
-    color: #64748b; font-weight: 600; transition: 0.2s; cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none; 
+    padding: 14px 24px; 
+    margin: 4px 15px; 
+    border-radius: 12px; 
+    color: #64748b; 
+    font-weight: 600; 
+    transition: 0.2s; 
+    cursor: pointer;
 }
 .nav-link:hover { background: #f8fafc; color: var(--text-dark); }
 .nav-link.active { background: #f0f9ff; color: var(--accent-blue); }

@@ -147,8 +147,7 @@
                         <th>STATUS</th>
                     </tr>
                 </thead>
-                <tbody id="inventory-table-body">
-                    </tbody>
+                <tbody id="inventory-table-body"></tbody>
             </table>
         </div>
     </template>
@@ -156,14 +155,14 @@
     <template id="tpl-add">
         <div class="form-card">
             <div class="form-header">
-                <i class="fa-solid fa-circle-plus"></i>
+                <i class="fa-solid fa-circle-plus" style="color: var(--accent-blue);"></i>
                 <h2 style="display: inline; margin-left: 10px;">Register New Supply</h2>
             </div>
             <form id="supply-form" onsubmit="app.saveMed(event)" style="margin-top: 30px;">
                 <div class="form-grid">
                     <div class="form-group full-width">
                         <label>Medicine Name</label>
-                        <input type="text" id="med-name" placeholder="Enter name" required>
+                        <input type="text" id="med-name" placeholder="Enter name" required autocomplete="off">
                     </div>
                     <div class="form-group">
                         <label>Dosage (mg)</label>
