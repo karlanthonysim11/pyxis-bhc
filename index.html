@@ -101,13 +101,65 @@
         </main>
     </div>
 
+    <template id="tpl-dashboard">
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="icon-circle bg-blue"><i class="fa-solid fa-pills"></i></div>
+                <div><h3 id="stat-count">0</h3><p>Medicines</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="icon-circle bg-green"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <div><h3 id="stat-units">0</h3><p>Total Units</p></div>
+            </div>
+            <div class="stat-card" id="card-low-stock">
+                <div class="icon-circle bg-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div><h3 id="stat-low">0</h3><p>Low Stock</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="icon-circle bg-red"><i class="fa-solid fa-calendar-xmark"></i></div>
+                <div><h3 id="stat-expiry">0</h3><p>Near Expiry</p></div>
+            </div>
+        </div>
+        <div class="form-card" style="max-width: 100%; margin-top: 20px;">
+            <div class="form-header">
+                <i class="fa-solid fa-heart-pulse" style="color: var(--accent-blue);"></i>
+                <h2 style="display: inline; margin-left: 10px;">System Health</h2>
+            </div>
+            <p style="margin-top: 15px; font-weight: 600;">
+                Connection: <span style="color: #22c55e;">● Cloud Sync Active</span>
+            </p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">
+                Secure connection established with Supabase PostgreSQL.
+            </p>
+        </div>
+    </template>
+
+    <template id="tpl-inventory">
+        <div class="table-card">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>MEDICINE NAME</th>
+                        <th>DOSAGE</th>
+                        <th>CATEGORY</th>
+                        <th>STOCK</th>
+                        <th>EXPIRY</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-table-body">
+                    </tbody>
+            </table>
+        </div>
+    </template>
+
     <template id="tpl-add">
         <div class="form-card">
             <div class="form-header">
                 <i class="fa-solid fa-circle-plus"></i>
-                <h2>Register New Supply</h2>
+                <h2 style="display: inline; margin-left: 10px;">Register New Supply</h2>
             </div>
-            <form id="supply-form" onsubmit="app.saveMed(event)">
+            <form id="supply-form" onsubmit="app.saveMed(event)" style="margin-top: 30px;">
                 <div class="form-grid">
                     <div class="form-group full-width">
                         <label>Medicine Name</label>
