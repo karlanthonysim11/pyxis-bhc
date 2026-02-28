@@ -86,7 +86,14 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .top-nav { 
     height: 80px; background: white; border-bottom: 1px solid var(--border); 
     display: flex; align-items: center; justify-content: space-between; padding: 0 40px;
+    transition: border-color 0.3s ease, border-width 0.3s ease;
 }
+
+/* GLOBAL TOP NAV ALERT */
+.nav-alert {
+    border-bottom: 3px solid var(--danger) !important;
+}
+
 #view-title { font-size: 1.1rem; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
 
 /* --- NOTIFICATION BADGE STYLING --- */
@@ -129,6 +136,12 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .modern-table th { background: #f8fafc; padding: 18px 20px; text-align: left; color: #94a3b8; font-size: 0.75rem; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
 .modern-table td { padding: 20px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 
+/* WHOLE ROW CRITICAL ALERT */
+.row-critical {
+    background-color: #fff1f2 !important; /* Soft Red Background */
+    border-left: 4px solid var(--danger);
+}
+
 /* --- STOCK INDICATORS --- */
 .stock-indicator { padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; display: inline-block; }
 .stable { background: #dcfce7; color: #166534; }
@@ -149,6 +162,8 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 }
 .nav-link:hover { background: #f8fafc; color: var(--text-dark); }
 .nav-link.active { background: #f0f9ff; color: var(--accent-blue); }
+
+/* --- ANIMATIONS & ALERTS --- */
 
 /* 1. Red Alert for Expiry Dates */
 .expiry-warning {

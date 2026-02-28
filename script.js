@@ -28,7 +28,6 @@ const app = {
 
             this.updateBadge();
             
-            // Auto-refresh the current view
             const titleElement = document.getElementById('view-title');
             const title = titleElement ? titleElement.innerText.toLowerCase().replace(' ', '-') : 'dashboard';
             ui.render(title || 'dashboard');
@@ -96,53 +95,48 @@ const app = {
         return true;
     },
 
-    // UPDATED: Check for both Low Stock and Near Expiry
+    // REFINED PRIORITY LOGIC: Only turns red if a critical condition exists
     updateBadge() {
         const badge = document.getElementById('alert-badge');
-        const bellIcon = document.querySelector('.fa-bell'); // Targeting the bell icon
+        const bellIcon = document.querySelector('.fa-bell'); 
 
         if(badge) {
             const today = new Date();
             
-            // Count items that are EITHER low stock OR expiring in <= 30 days
-            const alerts = inventory.filter(m => {
-                const isLowStock = (parseInt(m.qty) || 0) < 10;
-                
-                let isNearExpiry = false;
+            // Filter for items that hit ANY critical threshold
+            const criticalItems = inventory.filter(m => {
+                const isLow = (parseInt(m.qty) || 0) < 10;
+                let isExpiring = false;
                 if(m.exp) {
-                    const expDate = new Date(m.exp);
-                    const diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
-                    isNearExpiry = diffDays <= 30;
+                    const diff = Math.ceil((new Date(m.exp) - today) / (1000 * 60 * 60 * 24));
+                    isExpiring = diff <= 30;
                 }
-                
-                return isLowStock || isNearExpiry;
+                return isLow || isExpiring;
             });
 
-            badge.innerText = alerts.length;
+            badge.innerText = criticalItems.length;
 
-            // CLIENT REQUIREMENT: Turn icon red if there are any alerts
-            if(alerts.length > 0) {
-                badge.style.background = "#ef4444"; // Bright Red Badge
-                if(bellIcon) bellIcon.style.color = "#ef4444"; // Red Icon
+            // GLOBAL ALERT TRIGGER
+            if(criticalItems.length > 0) {
+                badge.style.background = "#ef4444"; 
+                if(bellIcon) bellIcon.classList.add('alert-active'); // Triggers CSS animation
             } else {
                 badge.style.background = "var(--accent-blue)";
-                if(bellIcon) bellIcon.style.color = "inherit";
+                if(bellIcon) bellIcon.classList.remove('alert-active');
             }
         }
     }
 };
 
 const ui = {
-    // UPDATED: Helper to determine if a date is critical
     getExpiryStatus(dateStr) {
         if (!dateStr) return { isCritical: false, style: '' };
         const expDate = new Date(dateStr);
         const today = new Date();
         const diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
         
-        // CLIENT REQUIREMENT: Red color notice for expiring soon (30 days)
         if (diffDays <= 30) {
-            return { isCritical: true, style: 'color: #ef4444; font-weight: bold; animation: pulse 2s infinite;' };
+            return { isCritical: true, style: 'color: #ef4444; font-weight: 800; animation: blink-red 2s infinite;' };
         }
         return { isCritical: false, style: '' };
     },
@@ -164,8 +158,6 @@ const ui = {
         if(tab === 'dashboard') {
             const today = new Date();
             const totalStock = inventory.reduce((a,b) => a + (parseInt(b.qty) || 0), 0);
-            
-            // Logic for Dashboard cards
             const lowItems = inventory.filter(m => (parseInt(m.qty) || 0) < 10).length;
             const expiringSoon = inventory.filter(m => {
                 if(!m.exp) return false;
@@ -217,8 +209,11 @@ const ui = {
                         </thead>
                         <tbody>${inventory.map((m) => {
                             const expStatus = this.getExpiryStatus(m.exp);
+                            const isLow = m.qty < 10;
+                            const isCriticalRow = isLow || expStatus.isCritical;
+                            
                             return `
-                            <tr>
+                            <tr class="${isCriticalRow ? 'row-critical' : ''}">
                                 <td>
                                     <div class="med-info">
                                         <span class="med-primary">${m.name}</span>
@@ -227,7 +222,7 @@ const ui = {
                                 </td>
                                 <td><span class="stock-indicator" style="background:#f1f5f9; color:#475569;">${m.cat}</span></td>
                                 <td>
-                                    <span class="stock-indicator ${m.qty < 10 ? 'critical' : 'stable'}">
+                                    <span class="stock-indicator ${isLow ? 'critical' : 'stable'}">
                                         ${m.qty} Units
                                     </span>
                                 </td>
