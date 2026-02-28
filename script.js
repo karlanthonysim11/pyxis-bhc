@@ -391,7 +391,7 @@ const ui = {
     },
 
     async dispense(id, currentQty, name) {
-        const v = prompt(`Dispense ${name}?\nCurrent Stock: ${currentQty}\nHow many units to remove?`);
+        const v = prompt(`Dispense ${name}?\\nCurrent Stock: ${currentQty}\\nHow many units to remove?`);
         if(v !== null && v !== "" && !isNaN(v)) { 
             const amountToRemove = parseInt(v);
             const newQty = parseInt(currentQty) - amountToRemove;
