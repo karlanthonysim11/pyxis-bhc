@@ -31,15 +31,72 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 
 .sidebar-brand span span { color: var(--accent-blue); }
 
-/* --- LOGIN PAGE --- */
+/* --- LOGIN PAGE (Updated to Modern Vertical) --- */
 .auth-page { 
-    height: 100vh; background: #f1f5f9; 
-    display: flex; align-items: center; justify-content: center; 
+    height: 100vh; 
+    background: #f1f5f9; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
 }
 
 .auth-card { 
-    background: white; width: 450px; padding: 60px 50px; border-radius: 28px; 
-    text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border);
+    background: white; 
+    width: 450px; 
+    padding: 60px 50px; 
+    border-radius: 28px; 
+    text-align: center; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+    border: 1px solid var(--border);
+}
+
+.auth-logo i {
+    font-size: 3.5rem;
+    color: var(--accent-blue);
+    margin-bottom: 15px;
+}
+
+.auth-logo h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--text-dark);
+}
+
+.auth-logo p {
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 40px;
+}
+
+.input-field {
+    text-align: left;
+}
+
+.input-field label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #475569;
+    margin-bottom: 8px;
+    padding-left: 4px;
+}
+
+.input-field input {
+    width: 100%;
+    padding: 14px 20px;
+    border: 1px solid transparent;
+    background: #f1f5f9;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.input-field input:focus {
+    background: white;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
 }
 
 /* --- MAIN LAYOUT --- */
@@ -120,7 +177,6 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     padding-left: 2px;
 }
 
-/* Rounded, light grey inputs from screenshot */
 .form-group input, .form-group select { 
     width: 100%; 
     padding: 14px 20px; 
@@ -189,6 +245,13 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 }
 .nav-link:hover { background: #f8fafc; color: var(--text-dark); }
 .nav-link.active { background: #f0f9ff; color: var(--accent-blue); }
+
+/* --- USER PROFILE (TOP NAV) --- */
+.user-profile { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--border); }
+.u-info { text-align: right; }
+.u-name { display: block; font-weight: 700; font-size: 0.9rem; }
+.u-loc { font-size: 0.75rem; color: var(--text-muted); }
+.u-avatar { width: 38px; height: 38px; background: #e0f2fe; color: var(--accent-blue); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; }
 
 /* --- ANIMATIONS --- */
 .expiry-warning { color: var(--danger); font-weight: 800; animation: blink-red 2s infinite; }
