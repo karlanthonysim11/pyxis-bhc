@@ -137,6 +137,23 @@ const ui = {
         return { isCritical: false, style: '' };
     },
 
+    // New Filter Function
+    filterInventory() {
+        const query = document.getElementById('search-bar').value.toLowerCase();
+        const rows = document.querySelectorAll('#inventory-table-body tr');
+
+        rows.forEach(row => {
+            const name = row.querySelector('.med-primary').innerText.toLowerCase();
+            const category = row.cells[1].innerText.toLowerCase();
+            
+            if (name.includes(query) || category.includes(query)) {
+                row.style.display = ""; 
+            } else {
+                row.style.display = "none";
+            }
+        });
+    },
+
     view(tab) {
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
         const target = document.getElementById(`tab-${tab}`);
@@ -192,6 +209,14 @@ const ui = {
 
         if(tab === 'inventory') {
             root.innerHTML = `
+                <div class="search-area" style="margin-bottom: 20px;">
+                    <div class="form-group" style="max-width: 400px; position: relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 12px; color: #94a3b8;"></i>
+                        <input type="text" id="search-bar" placeholder="Search by name or category..." 
+                               onkeyup="ui.filterInventory()" 
+                               style="padding: 10px 15px 10px 45px; width: 100%; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    </div>
+                </div>
                 <div class="table-card">
                     <table class="modern-table">
                         <thead>
@@ -203,7 +228,7 @@ const ui = {
                                 <th style="text-align:right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>${inventory.map((m) => {
+                        <tbody id="inventory-table-body">${inventory.map((m) => {
                             const expStatus = this.getExpiryStatus(m.exp);
                             const isLow = m.qty < 10;
                             const isCriticalRow = isLow || expStatus.isCritical;

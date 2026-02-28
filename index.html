@@ -135,16 +135,23 @@
     </template>
 
     <template id="tpl-inventory">
+        <div class="search-container" style="margin-bottom: 20px;">
+            <div class="form-group" style="max-width: 400px; position: relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 15px; color: var(--text-muted);"></i>
+                <input type="text" id="search-bar" placeholder="Search by medicine name..." 
+                       onkeyup="ui.filterInventory()" 
+                       style="padding-left: 45px; border-radius: 12px;">
+            </div>
+        </div>
         <div class="table-card">
             <table class="modern-table">
                 <thead>
                     <tr>
-                        <th>MEDICINE NAME</th>
-                        <th>DOSAGE</th>
+                        <th>MEDICINE DETAILS</th>
                         <th>CATEGORY</th>
-                        <th>STOCK</th>
+                        <th>STOCK LEVEL</th>
                         <th>EXPIRY</th>
-                        <th>STATUS</th>
+                        <th style="text-align:right">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody id="inventory-table-body"></tbody>
@@ -158,38 +165,32 @@
                 <i class="fa-solid fa-circle-plus" style="color: var(--accent-blue);"></i>
                 <h2 style="display: inline; margin-left: 10px;">Register New Supply</h2>
             </div>
-            <form id="supply-form" onsubmit="app.saveMed(event)" style="margin-top: 30px;">
+            <div style="margin-top: 30px;">
                 <div class="form-grid">
                     <div class="form-group full-width">
                         <label>Medicine Name</label>
-                        <input type="text" id="med-name" placeholder="Enter name" required autocomplete="off">
+                        <input type="text" id="n" placeholder="Enter name" required autocomplete="off">
                     </div>
                     <div class="form-group">
                         <label>Dosage (mg)</label>
-                        <input type="number" id="med-dosage" placeholder="500" required>
+                        <input type="text" id="mg" placeholder="500">
                     </div>
                     <div class="form-group">
                         <label>Category</label>
-                        <select id="med-category" required>
-                            <option value="" disabled selected>Select category</option>
-                            <option value="Antibiotics">Antibiotics</option>
-                            <option value="Painkillers">Painkillers</option>
-                            <option value="Vitamins">Vitamins</option>
-                        </select>
-                    </div>
+                        <select id="c" required></select> </div>
                     <div class="form-group">
                         <label>Initial Quantity</label>
-                        <input type="number" id="med-qty" placeholder="0" required>
+                        <input type="number" id="q" placeholder="0" required>
                     </div>
                     <div class="form-group">
                         <label>Expiration Date</label>
-                        <input type="date" id="med-expiry" required>
+                        <input type="date" id="e" required>
                     </div>
                 </div>
-                <button type="submit" class="btn-submit">
+                <button type="button" class="btn-submit" onclick="ui.handleSave()">
                     <i class="fa-solid fa-cloud-arrow-up"></i> Save to Cloud
                 </button>
-            </form>
+            </div>
         </div>
     </template>
     
