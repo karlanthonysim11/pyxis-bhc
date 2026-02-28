@@ -61,7 +61,6 @@ const app = {
     },
 
     async saveMed(n, mg, c, q, e) {
-        // Ensure quantity is saved as a number
         const { error } = await _supabase
             .from('inventory')
             .insert([{ name: n, mg: mg, cat: c, qty: parseInt(q), exp: e }]);
@@ -83,16 +82,12 @@ const app = {
     },
 
     async updateQty(id, newQty) {
-        // This function sends the FINAL calculated number to the cloud
-        console.log(`Cloud Update: Setting ID ${id} to ${newQty} units`);
-
         const { error } = await _supabase
             .from('inventory')
             .update({ qty: parseInt(newQty) })
             .eq('id', id);
             
         if(error) {
-            console.error("Supabase Error:", error);
             alert("Cloud Update Failed: " + error.message);
             return false;
         }
@@ -101,22 +96,55 @@ const app = {
         return true;
     },
 
+    // UPDATED: Check for both Low Stock and Near Expiry
     updateBadge() {
         const badge = document.getElementById('alert-badge');
+        const bellIcon = document.querySelector('.fa-bell'); // Targeting the bell icon
+
         if(badge) {
-            const lowStockCount = inventory.filter(m => (parseInt(m.qty) || 0) < 10).length;
-            badge.innerText = lowStockCount;
+            const today = new Date();
+            
+            // Count items that are EITHER low stock OR expiring in <= 30 days
+            const alerts = inventory.filter(m => {
+                const isLowStock = (parseInt(m.qty) || 0) < 10;
+                
+                let isNearExpiry = false;
+                if(m.exp) {
+                    const expDate = new Date(m.exp);
+                    const diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+                    isNearExpiry = diffDays <= 30;
+                }
+                
+                return isLowStock || isNearExpiry;
+            });
+
+            badge.innerText = alerts.length;
+
+            // CLIENT REQUIREMENT: Turn icon red if there are any alerts
+            if(alerts.length > 0) {
+                badge.style.background = "#ef4444"; // Bright Red Badge
+                if(bellIcon) bellIcon.style.color = "#ef4444"; // Red Icon
+            } else {
+                badge.style.background = "var(--accent-blue)";
+                if(bellIcon) bellIcon.style.color = "inherit";
+            }
         }
     }
 };
 
 const ui = {
-    getExpiryStyle(dateStr) {
-        if (!dateStr) return '';
+    // UPDATED: Helper to determine if a date is critical
+    getExpiryStatus(dateStr) {
+        if (!dateStr) return { isCritical: false, style: '' };
         const expDate = new Date(dateStr);
         const today = new Date();
         const diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
-        return diffDays <= 30 ? 'color: #ef4444; font-weight: bold;' : '';
+        
+        // CLIENT REQUIREMENT: Red color notice for expiring soon (30 days)
+        if (diffDays <= 30) {
+            return { isCritical: true, style: 'color: #ef4444; font-weight: bold; animation: pulse 2s infinite;' };
+        }
+        return { isCritical: false, style: '' };
     },
 
     view(tab) {
@@ -134,8 +162,17 @@ const ui = {
         if(!root) return;
 
         if(tab === 'dashboard') {
+            const today = new Date();
             const totalStock = inventory.reduce((a,b) => a + (parseInt(b.qty) || 0), 0);
+            
+            // Logic for Dashboard cards
             const lowItems = inventory.filter(m => (parseInt(m.qty) || 0) < 10).length;
+            const expiringSoon = inventory.filter(m => {
+                if(!m.exp) return false;
+                const diffDays = Math.ceil((new Date(m.exp) - today) / (1000 * 60 * 60 * 24));
+                return diffDays <= 30;
+            }).length;
+
             root.innerHTML = `
                 <div class="stats-row">
                     <div class="stat-card">
@@ -148,7 +185,11 @@ const ui = {
                     </div>
                     <div class="stat-card">
                         <div class="icon-circle bg-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                        <div class="stat-data"><h3 class="text-red" style="color:#ef4444">${lowItems}</h3><p>Low Stock</p></div>
+                        <div class="stat-data"><h3 style="color:#ef4444">${lowItems}</h3><p>Low Stock</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-circle" style="background:#fef2f2; color:#ef4444;"><i class="fa-solid fa-calendar-xmark"></i></div>
+                        <div class="stat-data"><h3 style="color:#ef4444">${expiringSoon}</h3><p>Near Expiry</p></div>
                     </div>
                 </div>
                 <div class="form-card" style="max-width: 100%; margin: 0;">
@@ -174,7 +215,9 @@ const ui = {
                                 <th style="text-align:right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>${inventory.map((m) => `
+                        <tbody>${inventory.map((m) => {
+                            const expStatus = this.getExpiryStatus(m.exp);
+                            return `
                             <tr>
                                 <td>
                                     <div class="med-info">
@@ -188,7 +231,7 @@ const ui = {
                                         ${m.qty} Units
                                     </span>
                                 </td>
-                                <td><span style="${this.getExpiryStyle(m.exp)}">${m.exp || '--'}</span></td>
+                                <td><span style="${expStatus.style}">${m.exp || '--'}</span></td>
                                 <td style="text-align:right">
                                     <button class="btn-icon dispense" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name.replace(/'/g, "\\'")}')">
                                         <i class="fa-solid fa-hand-holding-medical"></i>
@@ -197,7 +240,7 @@ const ui = {
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </td>
-                            </tr>`).join('')}
+                            </tr>`}).join('')}
                         </tbody>
                     </table>
                 </div>`;
@@ -238,7 +281,6 @@ const ui = {
                 </div>`;
         }
         
-        // Render for categories and reports remains the same as your source
         if(tab === 'categories') {
             root.innerHTML = `<div class="form-card" style="max-width: 100%;"><div class="form-header"><i class="fa-solid fa-tags"></i><h3>Active Categories</h3></div><div style="display:flex; flex-wrap:wrap; gap:10px;">${categories.map(c => `<span class="stock-indicator stable">${c}</span>`).join('')}</div></div>`;
         }
@@ -259,21 +301,12 @@ const ui = {
 
     async dispense(id, currentQty, name) {
         const v = prompt(`Dispense ${name}?\nCurrent Stock: ${currentQty}\nHow many units to remove?`);
-        
         if(v !== null && v !== "" && !isNaN(v)) { 
             const amountToRemove = parseInt(v);
-            
-            // MATH FIX: Subtract input from the current cloud quantity
             const newQty = parseInt(currentQty) - amountToRemove;
-            
-            console.log(`Math: ${currentQty} - ${amountToRemove} = ${newQty}`);
-            
             if(newQty < 0) return alert("Insufficient stock!");
-            
             const success = await app.updateQty(id, newQty);
-            if(success) {
-                this.view('inventory');
-            }
+            if(success) this.view('inventory');
         }
     }
 };
