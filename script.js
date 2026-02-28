@@ -24,7 +24,7 @@ const app = {
             if (invErr || catErr) throw new Error("Database connection failed");
 
             inventory = invData || [];
-            // Updated to store full category objects to support deletion by ID
+            // Storing full objects to ensure ID is available for deletion
             categories = catData || [];
 
             this.updateBadge();
@@ -117,6 +117,12 @@ const app = {
     },
 
     async deleteCategory(id, name) {
+        // Validation check for ID
+        if(!id || id === 'undefined') {
+            console.error("Delete failed: ID is missing");
+            return alert("Error: Could not find category ID. Please refresh.");
+        }
+
         if(confirm(`Delete category "${name}"? This won't delete medicines in this category.`)) {
             const { error } = await _supabase.from('categories').delete().eq('id', id);
             if(!error) {
