@@ -133,6 +133,7 @@ const app = {
                 .eq('id', id);
 
             if(!error) {
+                // We re-initialize and force a re-render to make it disappear
                 await this.init();
                 ui.render('categories');
             } else {
