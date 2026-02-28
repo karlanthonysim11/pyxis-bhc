@@ -24,7 +24,8 @@ const app = {
             if (invErr || catErr) throw new Error("Database connection failed");
 
             inventory = invData || [];
-            categories = catData ? catData.map(c => c.name) : [];
+            // Updated to store full category objects to support deletion by ID
+            categories = catData || [];
 
             this.updateBadge();
             
@@ -95,6 +96,38 @@ const app = {
         return true;
     },
 
+    // --- NEW CATEGORY METHODS ---
+    async addCategory() {
+        const input = document.getElementById('new-category-name');
+        const name = input.value.trim();
+        
+        if (!name) return alert("Please enter a category name");
+
+        const { error } = await _supabase
+            .from('categories')
+            .insert([{ name: name }]);
+
+        if (!error) {
+            input.value = '';
+            await this.init();
+            ui.render('categories');
+        } else {
+            alert("Failed to add category: " + error.message);
+        }
+    },
+
+    async deleteCategory(id, name) {
+        if(confirm(`Delete category "${name}"? This won't delete medicines in this category.`)) {
+            const { error } = await _supabase.from('categories').delete().eq('id', id);
+            if(!error) {
+                await this.init();
+                ui.render('categories');
+            } else {
+                alert("Delete Failed: " + error.message);
+            }
+        }
+    },
+
     updateBadge() {
         const badge = document.getElementById('alert-badge');
         const bellIcon = document.querySelector('.fa-bell'); 
@@ -137,7 +170,6 @@ const ui = {
         return { isCritical: false, style: '' };
     },
 
-    // New Filter Function
     filterInventory() {
         const query = document.getElementById('search-bar').value.toLowerCase();
         const rows = document.querySelectorAll('#inventory-table-body tr');
@@ -282,7 +314,7 @@ const ui = {
                             <label>Category</label>
                             <select id="c">
                                 <option value="" disabled selected>Select category</option>
-                                ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                                ${categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group">
@@ -302,10 +334,22 @@ const ui = {
         
         if(tab === 'categories') {
             root.innerHTML = `
+                <div class="form-card" style="max-width: 600px; margin-bottom: 25px;">
+                    <div class="form-header"><i class="fa-solid fa-tag" style="color:var(--accent-blue)"></i><h3>Create New Category</h3></div>
+                    <div style="display:flex; gap:10px; margin-top:15px;">
+                        <input type="text" id="new-category-name" placeholder="Enter category name..." style="flex:1; padding:12px; border-radius:10px; border:1px solid var(--border);">
+                        <button class="btn-submit" style="margin:0; width:auto; padding:0 20px;" onclick="app.addCategory()">Add</button>
+                    </div>
+                </div>
                 <div class="form-card" style="max-width: 100%;">
                     <div class="form-header"><i class="fa-solid fa-tags" style="color:var(--accent-blue)"></i><h3>Active Categories</h3></div>
-                    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:20px;">
-                        ${categories.map(c => `<span class="stock-indicator stable">${c}</span>`).join('')}
+                    <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:20px;">
+                        ${categories.map(c => `
+                            <div class="category-pill">
+                                <span>${c.name}</span>
+                                <i class="fa-solid fa-xmark delete-cat" onclick="app.deleteCategory('${c.id}', '${c.name}')"></i>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>`;
         }
