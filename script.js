@@ -18,6 +18,7 @@ const app = {
 
     async init() {
         try {
+            // RAD Stage: Construction - Fetching Real-time Data for Monitoring
             const { data: invData, error: invErr } = await _supabase.from('inventory').select('*').order('name');
             const { data: catData, error: catErr } = await _supabase.from('categories').select('*').order('name');
             
@@ -63,7 +64,7 @@ const app = {
         window.location.reload();
     },
 
-    // New Function: Log Transaction
+    // New Function: Log Transaction (Automated Audit Methodology)
     async logTransaction(itemName, type, qty, status) {
         try {
             await _supabase.from('logs').insert([{ 
@@ -163,9 +164,11 @@ const app = {
 };
 
 const ui = {
+    // Methodology: Automated Expiration Monitoring Logic
     getExpiryStatus(dateStr) {
         if (!dateStr) return { isCritical: false, style: '' };
         const diffDays = Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
+        // Critical alert if 30 days or less remaining
         if (diffDays <= 30) return { isCritical: true, style: 'color: #ef4444; font-weight: 800;' };
         return { isCritical: false, style: '' };
     },
@@ -368,6 +371,7 @@ const ui = {
             if(newQty < 0) return alert("Insufficient stock!");
             const success = await app.updateQty(id, newQty);
             if(success) {
+                // Methodology: Triggering the Automated Audit Log upon stock subtraction
                 await app.logTransaction(name, 'Dispensed', removeQty, 'Success');
                 this.view(redirectTab);
             }
