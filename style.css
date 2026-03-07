@@ -1,6 +1,7 @@
 :root {
     --bg-light: #f1f5f9;
     --sidebar-w: 280px;
+    --nav-dark: #0f172a;       /* Classy Dark Blue for Sidebar */
     --accent-blue: #0ea5e9;
     --accent-dark: #0369a1;
     --accent-supply: #0ea5e9; /* Light blue for supplies */
@@ -27,7 +28,7 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     font-size: 2.2rem;       
     font-weight: 800;        
     letter-spacing: -1.5px;  
-    color: var(--text-dark);
+    color: #ffffff;          /* White logo for dark background */
 }
 .sidebar-brand span span { color: var(--accent-blue); }
 
@@ -50,19 +51,31 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 
 /* --- MAIN LAYOUT --- */
 .app-shell { display: flex; height: 100vh; }
-.sidebar { width: var(--sidebar-w); background: white; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 30px 0; }
+.sidebar { 
+    width: var(--sidebar-w); 
+    background: var(--nav-dark); /* Applied Dark Blue */
+    border-right: none; 
+    display: flex; 
+    flex-direction: column; 
+    padding: 30px 0; 
+}
 .main-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
 /* --- TOP NAVIGATION --- */
 .top-nav { 
-    height: 80px; background: white; border-bottom: 1px solid var(--border); 
-    display: flex; align-items: center; justify-content: space-between; padding: 0 40px;
+    height: 80px; 
+    background: #ffffff; 
+    border-bottom: 1px solid var(--border); 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 0 40px;
 }
 #view-title { font-size: 1.1rem; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
 .nav-icons { display: flex; align-items: center; gap: 20px; }
-.icon-btn { position: relative; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; border:none; background:none; }
+.icon-btn { position: relative; font-size: 1.2rem; color: var(--text-dark); cursor: pointer; border:none; background:none; }
 #alert-badge {
-    position: absolute; top: -8px; right: -8px; background: var(--accent-blue);
+    position: absolute; top: -8px; right: -8px; background: var(--danger);
     color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 50%;
     font-weight: 800; border: 2px solid white;
 }
@@ -140,18 +153,18 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .nav-link { 
     display: flex; align-items: center; gap: 12px; text-decoration: none; 
     padding: 14px 24px; margin: 4px 15px; border-radius: 12px; 
-    color: var(--text-muted); font-weight: 600; transition: 0.2s; cursor: pointer;
+    color: #94a3b8; font-weight: 600; transition: 0.2s; cursor: pointer;
 }
-.nav-link:hover { background: #f8fafc; color: var(--text-dark); }
-.nav-link.active { background: #f0f9ff; color: var(--accent-blue); }
+.nav-link:hover { background: rgba(255,255,255,0.05); color: #ffffff; }
+.nav-link.active { background: rgba(14, 165, 233, 0.15); color: var(--accent-blue); }
 
 /* Ensure icons inside links follow the text color */
-.nav-link i { color: inherit; }
+.nav-link i { color: inherit; width: 20px; text-align: center; }
 
 /* Logout safety highlight */
 .logout-action:hover {
-    color: var(--danger) !important;
-    background: #fef2f2 !important;
+    color: #ffffff !important;
+    background: var(--danger) !important;
 }
 
 /* --- CATEGORY PILLS --- */
