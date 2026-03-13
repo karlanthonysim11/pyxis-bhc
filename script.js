@@ -235,15 +235,18 @@ const ui = {
                 <div style="display: flex; gap: 30px; align-items: start;">
                     <div style="flex: 1; min-width: 0;">
                         <div class="table-card">
-                            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
-                                <div class="search-wrapper" style="margin: 0; width: 100%;">
+                            <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                                <div class="search-wrapper" style="margin: 0; width: 70%;">
                                     <i class="fa-solid fa-magnifying-glass"></i>
                                     <input type="text" id="search-bar" placeholder="Search inventory..." onkeyup="ui.filterInventory()">
                                 </div>
+                                <button onclick="window.print()" class="no-print" style="background: var(--nav-dark); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-print"></i> Print List
+                                </button>
                             </div>
                             <table class="modern-table">
                                 <thead>
-                                    <tr><th>Item Details</th><th>Category</th><th>Stock</th><th>Expiry</th><th style="text-align:right">Actions</th></tr>
+                                    <tr><th>Item Details</th><th>Category</th><th>Stock</th><th>Expiry</th><th style="text-align:right" class="no-print">Actions</th></tr>
                                 </thead>
                                 <tbody id="inventory-table-body">
                                     ${inventory.map(m => this.createRow(m)).join('')}
@@ -252,7 +255,7 @@ const ui = {
                         </div>
                     </div>
 
-                    <div style="width: 380px; display: flex; flex-direction: column; gap: 30px; flex-shrink: 0;">
+                    <div style="width: 380px; display: flex; flex-direction: column; gap: 30px; flex-shrink: 0;" class="no-print">
                         <div class="form-card" style="padding: 30px;">
                             <h3 style="margin-bottom: 20px; font-size: 1.1rem; color: var(--text-muted);">CATEGORIES</h3>
                             <div style="display: flex; gap: 10px; margin-bottom: 20px;">

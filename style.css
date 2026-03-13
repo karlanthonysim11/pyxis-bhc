@@ -280,9 +280,17 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 
 /* --- PRINTING LOGIC --- */
 @media print {
-    #main-sidebar, .no-print, .search-wrapper, .sidebar-toggle, .nav-icons, .nav-link, button, .icon-btn {
+    /* Hide everything except the table area */
+    #main-sidebar, .no-print, .search-wrapper, .sidebar-toggle, .nav-icons, .nav-link, button, .icon-btn, .form-card {
         display: none !important;
     }
+    
+    /* Force the inventory table container to use the full page width */
+    .view-content > div > div:first-child {
+        width: 100% !important;
+        flex: none !important;
+    }
+
     .main-container, .view-content, .table-card {
         margin: 0 !important;
         padding: 0 !important;
@@ -290,7 +298,8 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
         box-shadow: none !important;
         border: none !important;
     }
+
     .print-only { display: block !important; }
-    body { background: white !important; }
+    body { background: white !important; overflow: visible !important; }
 }
 .print-only { display: none; }
