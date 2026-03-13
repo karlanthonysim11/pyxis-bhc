@@ -18,7 +18,6 @@ const app = {
 
     async init() {
         try {
-            // RAD Stage: Construction - Fetching Real-time Data for Monitoring
             const { data: invData, error: invErr } = await _supabase.from('inventory').select('*').order('name');
             const { data: catData, error: catErr } = await _supabase.from('categories').select('*').order('name');
             
@@ -64,7 +63,6 @@ const app = {
         window.location.reload();
     },
 
-    // New Function: Log Transaction (Automated Audit Methodology)
     async logTransaction(itemName, type, qty, status) {
         try {
             await _supabase.from('logs').insert([{ 
@@ -178,7 +176,6 @@ const ui = {
         return { isCritical: false, style: '' };
     },
 
-    // Updated: Logic to handle both the top search bar and the table search bars
     filterInventory() {
         const globalQuery = document.getElementById('global-search')?.value.toLowerCase() || "";
         const localQuery = document.getElementById('search-bar')?.value.toLowerCase() || "";
@@ -313,14 +310,32 @@ const ui = {
 
         if(tab === 'reports') {
             root.innerHTML = `
-                <div class="form-card" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+                <div class="no-print" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
                     <h3>Audit Reports</h3>
-                    <button class="btn-submit" onclick="window.print()" style="width:auto; padding: 0 20px;">Print PDF</button>
+                    <button class="btn-submit" onclick="window.print()" style="width:auto; padding: 0 20px;">
+                         <i class="fa-solid fa-print"></i> Print PDF
+                    </button>
                 </div>
-                <div class="table-card">
+                <div class="table-card print-container">
+                    <div class="print-only" style="margin-bottom: 20px; text-align: center;">
+                        <h2 style="margin:0;">PYXIS INVENTORY SYSTEM</h2>
+                        <p style="margin:5px 0;">Official Audit Transaction Report</p>
+                        <small>Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</small>
+                        <hr style="margin-top:15px; border: 0; border-top: 1px solid #eee;">
+                    </div>
                     <table class="modern-table">
-                        <thead><tr><th>Time</th><th>Item</th><th>Action</th><th>Qty</th><th>Status</th></tr></thead>
-                        <tbody id="audit-table-body"><tr><td colspan="5" style="text-align:center;">Loading logs...</td></tr></tbody>
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Item Name</th>
+                                <th>Action</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-table-body">
+                            <tr><td colspan="5" style="text-align:center;">Loading transactions...</td></tr>
+                        </tbody>
                     </table>
                 </div>`;
             this.loadAuditLogs();
@@ -329,17 +344,27 @@ const ui = {
 
     async loadAuditLogs() {
         const tbody = document.getElementById('audit-table-body');
-        const { data, error } = await _supabase.from('logs').select('*').order('created_at', { ascending: false }).limit(20);
+        const { data, error } = await _supabase.from('logs').select('*').order('created_at', { ascending: false }).limit(50);
         if (error || !data) return;
-        tbody.innerHTML = data.map(log => `
-            <tr>
-                <td>${new Date(log.created_at).toLocaleTimeString()}</td>
-                <td><strong>${log.item_name}</strong></td>
-                <td>Dispensed</td>
-                <td>-${log.quantity}</td>
-                <td><span style="color:green">● Success</span></td>
-            </tr>
-        `).join('');
+        
+        tbody.innerHTML = data.map(log => {
+            const dateObj = new Date(log.created_at);
+            const dateStr = dateObj.toLocaleDateString();
+            const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            return `
+                <tr>
+                    <td>
+                        <span style="font-weight:600; display:block;">${dateStr}</span>
+                        <small style="color:#64748b;">${timeStr}</small>
+                    </td>
+                    <td><strong>${log.item_name}</strong></td>
+                    <td>${log.type || 'Dispensed'}</td>
+                    <td style="color:#ef4444; font-weight:bold;">-${log.quantity}</td>
+                    <td><span style="color:green">● ${log.status || 'Success'}</span></td>
+                </tr>
+            `;
+        }).join('');
     },
 
     createRow(m, isMed) {
@@ -354,7 +379,7 @@ const ui = {
                 <td><span class="stock-indicator" style="background:#f1f5f9; color:#475569;">${m.cat}</span></td>
                 <td><span class="stock-indicator ${isLow ? 'critical' : 'stable'}">${m.qty} Units</span></td>
                 <td><span style="${expStatus.style}">${m.exp || '--'}</span></td>
-                <td style="text-align:right">
+                <td style="text-align:right" class="no-print">
                     <button class="icon-btn" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name.replace(/'/g, "\\'")}', '${isMed ? 'inventory' : 'supplies'}')">
                         <i class="fa-solid fa-minus-circle"></i>
                     </button>
@@ -383,7 +408,6 @@ const ui = {
             if(newQty < 0) return alert("Insufficient stock!");
             const success = await app.updateQty(id, newQty);
             if(success) {
-                // Methodology: Triggering the Automated Audit Log upon stock subtraction
                 await app.logTransaction(name, 'Dispensed', removeQty, 'Success');
                 this.view(redirectTab);
             }
