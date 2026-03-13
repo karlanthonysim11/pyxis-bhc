@@ -102,24 +102,24 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     font-weight: 800; border: 2px solid white;
 }
 
-/* --- CONTENT AREA (FIXED FOR FULL SPREAD) --- */
+/* --- CONTENT AREA (FIXED FOR TOP ALIGNMENT) --- */
 .view-content { 
     padding: 40px; 
     overflow-y: auto; 
     flex: 1; 
-    display: flex; 
-    flex-direction: column;
+    display: block; /* Ensures items stack normally from the top */
     width: 100%; 
 }
 
-/* --- DASHBOARD STYLING (FIXED TO SPREAD CLEANLY) --- */
+/* --- DASHBOARD STYLING (FIXED TO SPREAD CLEANLY AT TOP) --- */
 .stats-row { 
     display: grid; 
-    /* Changed minmax to be more flexible (200px) so they fill the row before wrapping */
+    /* Force cards to fill the width in one row */
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
     gap: 30px; 
     margin-bottom: 30px; 
     width: 100%;
+    align-items: start;
 }
 
 .stat-card { 
