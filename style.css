@@ -103,31 +103,48 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 /* --- CONTENT AREA --- */
 .view-content { padding: 40px; overflow-y: auto; flex: 1; }
 
-/* --- DASHBOARD STYLING --- */
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-bottom: 30px; }
-.stat-card { 
-    background: white; padding: 25px; border-radius: 20px; border: 1px solid var(--border);
-    display: flex; align-items: center; gap: 20px; box-shadow: var(--card-shadow);
-    transition: transform 0.2s ease;
+/* --- DASHBOARD STYLING (EXPANDED) --- */
+.stats-row { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); /* 3 wider columns instead of 4 or 5 */
+    gap: 30px; 
+    margin-bottom: 30px; 
 }
-.stat-card:hover { transform: translateY(-5px); }
 
-/* REVISED: Bigger base icons */
+.stat-card { 
+    background: white; 
+    padding: 40px 30px; /* Increased padding */
+    min-height: 180px;   /* Added minimum height to fill space vertically */
+    border-radius: 24px; 
+    border: 1px solid var(--border);
+    display: flex; 
+    align-items: center; 
+    gap: 25px; 
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover { transform: translateY(-8px); }
+
+/* REVISED: Much bigger base icons */
 .icon-circle { 
-    width: 68px; 
-    height: 68px; 
-    border-radius: 18px; 
+    width: 85px; 
+    height: 85px; 
+    border-radius: 22px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    font-size: 2rem; 
+    font-size: 2.5rem; 
     transition: all 0.3s ease; 
 }
 
-/* NEW: Makes the icon grow and become more visible when the card is hovered */
+/* Bigger Data Text */
+.stat-data h3 { font-size: 2.2rem; margin-bottom: 4px; }
+.stat-data p { font-size: 1.1rem; color: var(--text-muted); font-weight: 600; }
+
 .stat-card:hover .icon-circle {
-    transform: scale(1.2);
-    font-size: 2.2rem;
+    transform: scale(1.1);
+    font-size: 2.8rem;
 }
 
 .bg-blue { background: #e0f2fe; color: #0ea5e9; }

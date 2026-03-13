@@ -228,7 +228,7 @@ const ui = {
             }).length;
 
             root.innerHTML = `
-                <div class="stats-row" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px;">
+                <div class="stats-row">
                     <div class="stat-card">
                         <div class="icon-circle bg-blue"><i class="fa-solid fa-pills"></i></div>
                         <div class="stat-data"><h3>${medicines.length}</h3><p>Medicines</p></div>
