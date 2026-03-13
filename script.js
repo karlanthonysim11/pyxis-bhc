@@ -312,7 +312,7 @@ const ui = {
                                     <div class="input-field"><label>Quantity</label><input id="q" type="number" placeholder="0"></div>
                                     <div class="input-field"><label>Expiration</label><input id="e" type="date"></div>
                                 </div>
-                                <button onclick="ui.handleSave()" style="margin-top: 10px; background: var(--accent-blue); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;">
+                                <button onclick="ui.handleSave()" style="margin-top: 10px; background: var(--accent-blue); color: white; border: none; padding: 166px; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;">
                                     Save to Cloud
                                 </button>
                             </div>
@@ -411,12 +411,18 @@ const ui = {
         const v = prompt(`Dispense ${name}?\nHow many units to remove?`);
         if(v) { 
             const removeQty = parseInt(v);
+            if (isNaN(removeQty) || removeQty <= 0) return alert("Please enter a valid number.");
+            
             const newQty = parseInt(currentQty) - removeQty;
             if(newQty < 0) return alert("Insufficient stock!");
+            
             const success = await app.updateQty(id, newQty);
             if(success) {
+                // We await the log to ensure it hits the DB before refreshing
                 await app.logTransaction(name, 'Dispensed', removeQty, 'Success');
-                ui.render('inventory');
+                // Re-run init to get fresh data and re-render the current view
+                await app.init();
+                alert(`Dispensed ${removeQty} units of ${name}`);
             }
         }
     }
