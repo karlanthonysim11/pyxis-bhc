@@ -81,12 +81,13 @@ const app = {
         window.location.reload();
     },
 
-    async logTransaction(itemName, type, qty, status) {
+    // UPDATED: Matches your new Supabase Table Columns
+    async logTransaction(itemName, action, qty, status) {
         try {
             await _supabase.from('logs').insert([{ 
                 item_name: itemName, 
-                type: type, 
-                quantity: qty, 
+                action: action, 
+                qty_change: qty, 
                 status: status,
                 created_at: new Date().toISOString()
             }]);
@@ -114,6 +115,8 @@ const app = {
             .insert([{ name: n, mg: mg, cat: c, qty: parseInt(q), exp: e }]);
             
         if(!error) {
+            // Log the new item addition
+            await this.logTransaction(n, 'Added to Inventory', q, 'Success');
             await this.init();
             ui.render('inventory');
         } else {
@@ -373,17 +376,17 @@ const ui = {
         
         tbody.innerHTML = data.map(log => {
             const dateObj = new Date(log.created_at);
-            const actionColor = log.type === 'REMOVED' ? 'var(--danger)' : 'var(--accent-blue)';
-            const statusLabel = log.type === 'REMOVED' ? '● Data Deleted' : '● Completed';
-            const statusColor = log.type === 'REMOVED' ? '#ef4444' : '#22c55e';
+            const actionColor = log.action === 'REMOVED' ? 'var(--danger)' : 'var(--accent-blue)';
+            const statusLabel = log.action === 'REMOVED' ? '● Data Deleted' : '● Completed';
+            const statusColor = log.action === 'REMOVED' ? '#ef4444' : '#22c55e';
 
             return `
                 <tr>
                     <td><span style="font-weight:700;">${dateObj.toLocaleDateString()}</span><br><small style="color:var(--text-muted)">${dateObj.toLocaleTimeString()}</small></td>
                     <td><strong>${log.item_name}</strong></td>
-                    <td><span style="text-transform: uppercase; font-size: 0.75rem; font-weight: 800; color: ${actionColor};">${log.type || 'Dispensed'}</span></td>
-                    <td style="color:var(--danger); font-weight:bold;">-${log.quantity}</td>
-                    <td><span style="color:${statusColor}; font-weight:700;">${statusLabel}</span></td>
+                    <td><span style="text-transform: uppercase; font-size: 0.75rem; font-weight: 800; color: ${actionColor};">${log.action || 'Dispensed'}</span></td>
+                    <td style="color:${log.qty_change < 0 ? 'var(--danger)' : 'var(--success)'}; font-weight:bold;">${log.qty_change > 0 ? '+' : ''}${log.qty_change}</td>
+                    <td><span style="color:${statusColor}; font-weight:700;">${log.status || statusLabel}</span></td>
                 </tr>`;
         }).join('');
     },
@@ -432,7 +435,8 @@ const ui = {
             
             const success = await app.updateQty(id, newQty);
             if(success) {
-                await app.logTransaction(name, 'Dispensed', removeQty, 'Success');
+                // Log the subtraction as a negative change
+                await app.logTransaction(name, 'Dispensed', -removeQty, 'Success');
                 await app.init();
                 alert(`Dispensed ${removeQty} units of ${name}`);
             }
