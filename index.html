@@ -52,36 +52,40 @@
     </div>
 
     <div id="app-interface" class="app-shell hidden">
-        <aside class="sidebar">
+        <aside class="sidebar" id="main-sidebar">
             <div class="sidebar-top">
+                <div class="sidebar-toggle" onclick="ui.toggleSidebar()" style="color: white; padding: 10px 25px; cursor: pointer; font-size: 1.2rem; opacity: 0.7;">
+                    <i class="fa-solid fa-bars"></i>
+                </div>
+
                 <div class="sidebar-brand">
                     <span>PYXIS<span>.</span></span>
                 </div>
                 <nav class="nav-stack">
                     <div class="nav-link" onclick="ui.view('dashboard')" id="tab-dashboard">
-                        <i class="fa-solid fa-house"></i> Dashboard
+                        <i class="fa-solid fa-house"></i> <span>Dashboard</span>
                     </div>
                     <div class="nav-link" onclick="ui.view('inventory')" id="tab-inventory">
-                        <i class="fa-solid fa-pills"></i> Inventory List
+                        <i class="fa-solid fa-pills"></i> <span>Inventory List</span>
                     </div>
                     <div class="nav-link" onclick="ui.view('add')" id="tab-add">
-                        <i class="fa-solid fa-square-plus"></i> New Supply
+                        <i class="fa-solid fa-square-plus"></i> <span>New Supply</span>
                     </div>
                     <div class="nav-link" onclick="ui.view('supplies')" id="tab-supplies">
-                        <i class="fa-solid fa-briefcase-medical"></i> Medical Supplies
+                        <i class="fa-solid fa-briefcase-medical"></i> <span>Medical Supplies</span>
                     </div>
                     <div class="nav-link" onclick="ui.view('categories')" id="tab-categories">
-                        <i class="fa-solid fa-tags"></i> Categories
+                        <i class="fa-solid fa-tags"></i> <span>Categories</span>
                     </div>
                     <div class="nav-link" onclick="ui.view('reports')" id="tab-reports">
-                        <i class="fa-solid fa-file-contract"></i> Audit Reports
+                        <i class="fa-solid fa-file-contract"></i> <span>Audit Reports</span>
                     </div>
                 </nav>
             </div>
             
             <div class="sidebar-footer">
                 <div class="nav-link logout-action" onclick="app.logout()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                    <i class="fa-solid fa-right-from-bracket"></i> <span>Sign Out</span>
                 </div>
             </div>
         </aside>

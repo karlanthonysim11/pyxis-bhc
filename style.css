@@ -29,6 +29,7 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     font-weight: 800;        
     letter-spacing: -1.5px;  
     color: #ffffff;          /* White logo for dark background */
+    transition: opacity 0.3s;
 }
 .sidebar-brand span span { color: var(--accent-blue); }
 
@@ -58,8 +59,17 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     display: flex; 
     flex-direction: column; 
     padding: 30px 0; 
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
-.main-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* --- COLLAPSIBLE SIDEBAR STATES --- */
+.sidebar.closed { width: 85px; }
+.sidebar.closed .sidebar-brand, 
+.sidebar.closed .nav-link span { opacity: 0; pointer-events: none; white-space: nowrap; }
+.sidebar.closed .nav-link { justify-content: center; padding: 14px 0; margin: 4px 10px; }
+.sidebar.closed .sidebar-toggle { text-align: center; padding: 10px 0; }
 
 /* --- TOP NAVIGATION --- */
 .top-nav { 
@@ -91,12 +101,23 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     transition: transform 0.2s ease;
 }
 .stat-card:hover { transform: translateY(-5px); }
-.icon-circle { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s ease; }
+
+/* REVISED: Bigger base icons */
+.icon-circle { 
+    width: 68px; 
+    height: 68px; 
+    border-radius: 18px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 2rem; 
+    transition: all 0.3s ease; 
+}
 
 /* NEW: Makes the icon grow and become more visible when the card is hovered */
 .stat-card:hover .icon-circle {
     transform: scale(1.2);
-    font-size: 1.8rem;
+    font-size: 2.2rem;
 }
 
 .bg-blue { background: #e0f2fe; color: #0ea5e9; }
