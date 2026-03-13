@@ -91,7 +91,14 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     transition: transform 0.2s ease;
 }
 .stat-card:hover { transform: translateY(-5px); }
-.icon-circle { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.icon-circle { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s ease; }
+
+/* NEW: Makes the icon grow and become more visible when the card is hovered */
+.stat-card:hover .icon-circle {
+    transform: scale(1.2);
+    font-size: 1.8rem;
+}
+
 .bg-blue { background: #e0f2fe; color: #0ea5e9; }
 .bg-green { background: #dcfce7; color: #22c55e; }
 .bg-red { background: #fef2f2; color: #ef4444; animation: pulse 2s infinite; }
