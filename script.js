@@ -28,6 +28,9 @@ const app = {
 
             this.updateBadge();
             
+            // Start Realtime Listener
+            this.subscribeToLogs();
+
             const titleElement = document.getElementById('view-title');
             let currentTab = titleElement ? titleElement.innerText.toLowerCase().replace(/\s+/g, '-') : 'dashboard';
             
@@ -41,6 +44,20 @@ const app = {
         } catch (err) {
             console.error("Fetch error:", err);
         }
+    },
+
+    // NEW REALTIME FUNCTION
+    subscribeToLogs() {
+        _supabase
+            .channel('realtime-logs')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'logs' }, (payload) => {
+                const titleElement = document.getElementById('view-title');
+                // Only trigger a re-render of logs if the user is currently on the Reports tab
+                if (titleElement && titleElement.innerText.includes('REPORTS')) {
+                    ui.loadAuditLogs();
+                }
+            })
+            .subscribe();
     },
 
     showAppInterface() {
