@@ -31,7 +31,6 @@ const app = {
             const titleElement = document.getElementById('view-title');
             let currentTab = titleElement ? titleElement.innerText.toLowerCase().replace(/\s+/g, '-') : 'dashboard';
             
-            // Map legacy views to the new merged 'inventory' control center
             if (['medical-supplies', 'inventory-list', 'inventory-control'].includes(currentTab)) {
                 currentTab = 'inventory';
             }
@@ -76,6 +75,21 @@ const app = {
             }]);
         } catch (err) {
             console.error("Logging failed:", err);
+        }
+    },
+
+    // NEW FUNCTION: Clear logs from Supabase
+    async clearAuditLogs() {
+        if(confirm("Are you sure you want to permanently delete ALL transaction history from the cloud?")) {
+            // Deletes all records from the 'logs' table
+            const { error } = await _supabase.from('logs').delete().neq('item_name', 'placeholder_force_delete'); 
+            
+            if(!error) {
+                await this.init();
+                ui.render('reports');
+            } else {
+                alert("Clear Logs Failed: " + error.message);
+            }
         }
     },
 
@@ -303,9 +317,14 @@ const ui = {
             root.innerHTML = `
                 <div class="no-print" style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
                     <h2 style="font-weight: 800;">Transaction Audit</h2>
-                    <button onclick="window.print()" class="nav-link active" style="border: none; padding: 10px 20px;">
-                        <i class="fa-solid fa-print"></i> Export PDF
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="app.clearAuditLogs()" class="btn-submit" style="background-color: var(--danger); width: auto; padding: 10px 20px; margin-top: 0;">
+                            <i class="fa-solid fa-trash-can"></i> Clear History
+                        </button>
+                        <button onclick="window.print()" class="nav-link active" style="border: none; padding: 10px 20px; margin: 0;">
+                            <i class="fa-solid fa-print"></i> Export PDF
+                        </button>
+                    </div>
                 </div>
                 <div class="table-card">
                     <table class="modern-table">
@@ -324,7 +343,10 @@ const ui = {
     async loadAuditLogs() {
         const tbody = document.getElementById('audit-table-body');
         const { data, error } = await _supabase.from('logs').select('*').order('created_at', { ascending: false }).limit(50);
-        if (error || !data) return;
+        if (error || !data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 40px; color: var(--text-muted);">No transaction history found.</td></tr>`;
+            return;
+        }
         
         tbody.innerHTML = data.map(log => {
             const dateObj = new Date(log.created_at);
