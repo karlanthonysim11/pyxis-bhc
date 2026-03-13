@@ -50,8 +50,22 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 }
 .input-field input:focus { background: white; border-color: var(--accent-blue); box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); }
 
-/* --- MAIN LAYOUT --- */
-.app-shell { display: flex; height: 100vh; width: 100vw; }
+/* --- MAIN LAYOUT (FIXED: RIGHT SIDE FILL) --- */
+.app-shell { 
+    display: flex; 
+    height: 100vh; 
+    width: 100vw; 
+    overflow: hidden; 
+}
+
+/* Add/Check if you have this class in your HTML wrapping the nav and content */
+.main-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
 .sidebar { 
     width: var(--sidebar-w); 
     background: var(--nav-dark); /* Applied Dark Blue */
@@ -82,7 +96,7 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .sidebar-toggle:hover { color: white; }
 .sidebar.closed .sidebar-toggle { text-align: center; padding: 10px 0; }
 
-/* --- TOP NAVIGATION --- */
+/* --- TOP NAVIGATION (FIXED: FULL WIDTH) --- */
 .top-nav { 
     height: 80px; 
     background: #ffffff; 
@@ -92,6 +106,7 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     justify-content: space-between; 
     padding: 0 40px;
     flex-shrink: 0;
+    width: 100%; /* Force spread to right side */
 }
 #view-title { font-size: 1.1rem; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
 .nav-icons { display: flex; align-items: center; gap: 20px; }
@@ -102,19 +117,18 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     font-weight: 800; border: 2px solid white;
 }
 
-/* --- CONTENT AREA (FIXED: ALIGN TO TOP) --- */
+/* --- CONTENT AREA (FIXED: TOP ALIGNMENT) --- */
 .view-content { 
     padding: 40px; 
     overflow-y: auto; 
     flex: 1; 
-    display: block; /* Changed from flex to block to force content to the top */
+    display: block; /* Ensures content flows from top down */
     width: 100%; 
 }
 
-/* --- DASHBOARD STYLING (FIXED: HORIZONTAL SPREAD) --- */
+/* --- DASHBOARD STYLING --- */
 .stats-row { 
     display: grid; 
-    /* Force 3 columns so they spread across the top */
     grid-template-columns: repeat(3, 1fr); 
     gap: 30px; 
     margin-bottom: 30px; 
@@ -136,7 +150,6 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 
 .stat-card:hover { transform: translateY(-8px); }
 
-/* Much bigger base icons */
 .icon-circle { 
     width: 85px; 
     height: 85px; 
@@ -148,7 +161,6 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     transition: all 0.3s ease; 
 }
 
-/* Bigger Data Text */
 .stat-data h3 { font-size: 2.2rem; margin-bottom: 4px; }
 .stat-data p { font-size: 1.1rem; color: var(--text-muted); font-weight: 600; }
 
@@ -165,7 +177,7 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .form-card { 
     background: white; 
     width: 100%;       
-    max-width: 800px; /* Optional: keeps the form from being too wide on giant screens */
+    max-width: 800px; 
     margin: 0; 
     padding: 50px; 
     border-radius: 28px; 
@@ -200,7 +212,6 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .stock-indicator { padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; display: inline-block; }
 .stable { background: #dcfce7; color: #166534; }
 
-/* Enhanced Critical Animation */
 .critical { 
     background: #fee2e2 !important; 
     color: #ef4444 !important; 
@@ -216,7 +227,6 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
-/* Icon Pulse for top nav bell */
 @keyframes pulse-icon { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
 .icon-btn i.alert-active { color: var(--danger) !important; animation: pulse-icon 1.5s infinite; }
 
@@ -228,11 +238,8 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 }
 .nav-link:hover { background: rgba(255,255,255,0.05); color: #ffffff; }
 .nav-link.active { background: rgba(14, 165, 233, 0.15); color: var(--accent-blue); }
-
-/* Ensure icons inside links follow the text color */
 .nav-link i { color: inherit; width: 20px; text-align: center; }
 
-/* Logout safety highlight */
 .logout-action:hover {
     color: #ffffff !important;
     background: var(--danger) !important;
