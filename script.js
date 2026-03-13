@@ -31,8 +31,10 @@ const app = {
             const titleElement = document.getElementById('view-title');
             let currentTab = titleElement ? titleElement.innerText.toLowerCase().replace(/\s+/g, '-') : 'dashboard';
             
-            if (currentTab === 'medical-supplies') currentTab = 'supplies';
-            if (currentTab === 'inventory-list') currentTab = 'inventory';
+            // Map legacy views to the new merged 'inventory' control center
+            if (['medical-supplies', 'inventory-list', 'inventory-control'].includes(currentTab)) {
+                currentTab = 'inventory';
+            }
 
             ui.render(currentTab || 'dashboard');
             
@@ -84,8 +86,7 @@ const app = {
             
         if(!error) {
             await this.init();
-            if (mg && mg.trim() !== "") ui.view('inventory');
-            else ui.view('supplies');
+            ui.render('inventory');
         } else {
             alert("Save Failed: " + error.message);
         }
@@ -123,7 +124,7 @@ const app = {
         if (!error) {
             input.value = '';
             await this.init();
-            ui.render('categories');
+            ui.render('inventory');
         } else {
             alert("Failed to add category: " + error.message);
         }
@@ -137,7 +138,7 @@ const app = {
             const { error } = await _supabase.from('categories').delete().eq('id', id);
             if(!error) {
                 await this.init();
-                ui.render('categories');
+                ui.render('inventory');
             }
         }
     },
@@ -177,23 +178,8 @@ const ui = {
     },
 
     filterInventory() {
-        const globalQuery = document.getElementById('global-search')?.value.toLowerCase() || "";
-        const localQuery = document.getElementById('search-bar')?.value.toLowerCase() || "";
-        const query = globalQuery || localQuery;
-
+        const query = document.getElementById('search-bar')?.value.toLowerCase() || "";
         const rows = document.querySelectorAll('#inventory-table-body tr');
-        rows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            row.style.display = text.includes(query) ? "" : "none";
-        });
-    },
-
-    filterSupplies() {
-        const globalQuery = document.getElementById('global-search')?.value.toLowerCase() || "";
-        const localQuery = document.getElementById('search-bar-supplies')?.value.toLowerCase() || "";
-        const query = globalQuery || localQuery;
-
-        const rows = document.querySelectorAll('#supplies-table-body tr');
         rows.forEach(row => {
             const text = row.innerText.toLowerCase();
             row.style.display = text.includes(query) ? "" : "none";
@@ -207,7 +193,7 @@ const ui = {
         
         const titleElement = document.getElementById('view-title');
         if(titleElement) {
-            titleElement.innerText = tab === 'supplies' ? 'MEDICAL SUPPLIES' : tab.toUpperCase().replace('-', ' ');
+            titleElement.innerText = tab === 'inventory' ? 'INVENTORY CONTROL' : tab.toUpperCase().replace('-', ' ');
         }
         this.render(tab);
     },
@@ -215,9 +201,6 @@ const ui = {
     async render(tab) {
         const root = document.getElementById('render-area');
         if(!root) return;
-
-        const medicines = inventory.filter(m => m.mg && m.mg.trim() !== "");
-        const supplies = inventory.filter(m => !m.mg || m.mg.trim() === "");
 
         if(tab === 'dashboard') {
             const totalStock = inventory.reduce((a,b) => a + (parseInt(b.qty) || 0), 0);
@@ -232,109 +215,102 @@ const ui = {
                 <div class="stats-row">
                     <div class="stat-card">
                         <div class="icon-circle bg-blue"><i class="fa-solid fa-pills"></i></div>
-                        <div class="stat-data"><h3>${medicines.length}</h3><p>Medicines</p></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="icon-circle" style="background:#e0f2fe; color:#0ea5e9;"><i class="fa-solid fa-briefcase-medical"></i></div>
-                        <div class="stat-data"><h3>${supplies.length}</h3><p>Supplies</p></div>
+                        <div class="stat-data"><h3>${inventory.length}</h3><p>Total Items</p></div>
                     </div>
                     <div class="stat-card">
                         <div class="icon-circle bg-green"><i class="fa-solid fa-boxes-stacked"></i></div>
                         <div class="stat-data"><h3>${totalStock}</h3><p>Total Units</p></div>
                     </div>
                     <div class="stat-card">
-                        <div class="icon-circle bg-red" style="${lowItems > 0 ? 'animation: pulse 2s infinite;' : ''}"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                        <div class="stat-data"><h3 style="color:#ef4444">${lowItems}</h3><p>Low Stock</p></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="icon-circle bg-red" style="${expiringSoon > 0 ? 'animation: pulse 2s infinite;' : ''}"><i class="fa-solid fa-calendar-xmark"></i></div>
-                        <div class="stat-data"><h3 style="color:#ef4444">${expiringSoon}</h3><p>Near Expiry</p></div>
+                        <div class="icon-circle bg-red" style="${(lowItems > 0 || expiringSoon > 0) ? 'animation: pulse 2s infinite;' : ''}">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="stat-data"><h3 style="color:var(--danger)">${lowItems + expiringSoon}</h3><p>Critical Alerts</p></div>
                     </div>
                 </div>`;
         }
 
         if(tab === 'inventory') {
             root.innerHTML = `
-                <div class="search-area" style="margin-bottom: 20px;">
-                    <input type="text" id="search-bar" placeholder="Search medicines..." onkeyup="ui.filterInventory()" style="padding: 10px; width: 300px; border-radius: 8px; border: 1px solid #ddd;">
-                </div>
-                <div class="table-card">
-                    <table class="modern-table">
-                        <thead><tr><th>Medicine Details</th><th>Category</th><th>Stock</th><th>Expiry</th><th style="text-align:right">Actions</th></tr></thead>
-                        <tbody id="inventory-table-body">${medicines.map(m => this.createRow(m, true)).join('')}</tbody>
-                    </table>
-                </div>`;
-        }
-
-        if(tab === 'supplies') {
-            root.innerHTML = `
-                <div class="search-area" style="margin-bottom: 20px;">
-                    <input type="text" id="search-bar-supplies" placeholder="Search supplies..." onkeyup="ui.filterSupplies()" style="padding: 10px; width: 300px; border-radius: 8px; border: 1px solid #ddd;">
-                </div>
-                <div class="table-card">
-                    <table class="modern-table">
-                        <thead><tr><th>Supply Item</th><th>Category</th><th>Stock</th><th>Expiry</th><th style="text-align:right">Actions</th></tr></thead>
-                        <tbody id="supplies-table-body">${supplies.map(m => this.createRow(m, false)).join('')}</tbody>
-                    </table>
-                </div>`;
-        }
-
-        if(tab === 'add') {
-            root.innerHTML = `
-                <div class="form-card">
-                    <div class="form-header"><h3>Register New Item</h3></div>
-                    <div class="form-grid" style="margin-top:20px;">
-                        <div class="form-group full-width"><label>Name</label><input id="n" type="text" placeholder="Item name"></div>
-                        <div class="form-group"><label>Dosage (mg) <small>(Leave blank for supplies)</small></label><input id="mg" type="text" placeholder="e.g. 500"></div>
-                        <div class="form-group"><label>Category</label><select id="c"><option value="">Select</option>${categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>Quantity</label><input id="q" type="number" placeholder="0"></div>
-                        <div class="form-group"><label>Expiration</label><input id="e" type="date"></div>
+                <div style="display: flex; gap: 30px; align-items: start;">
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="table-card">
+                            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                                <div class="search-wrapper" style="margin: 0; width: 100%;">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <input type="text" id="search-bar" placeholder="Search inventory..." onkeyup="ui.filterInventory()">
+                                </div>
+                            </div>
+                            <table class="modern-table">
+                                <thead>
+                                    <tr><th>Item Details</th><th>Category</th><th>Stock</th><th>Expiry</th><th style="text-align:right">Actions</th></tr>
+                                </thead>
+                                <tbody id="inventory-table-body">
+                                    ${inventory.map(m => this.createRow(m)).join('')}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <button class="btn-submit" onclick="ui.handleSave()">Save to Cloud</button>
-                </div>`;
-        }
 
-        if(tab === 'categories') {
-            root.innerHTML = `
-                <div class="form-card" style="max-width: 600px;">
-                    <h3>Categories</h3>
-                    <div style="display:flex; gap:10px; margin-top:15px;">
-                        <input type="text" id="new-category-name" placeholder="Name..." style="flex:1; padding:10px;">
-                        <button class="btn-submit" style="margin:0; width:auto;" onclick="app.addCategory()">Add</button>
-                    </div>
-                    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:20px;">
-                        ${categories.map(c => `<div class="category-pill"><span>${c.name}</span> <i class="fa-solid fa-trash" onclick="app.deleteCategory('${c.id}', '${c.name}')"></i></div>`).join('')}
+                    <div style="width: 380px; display: flex; flex-direction: column; gap: 30px; flex-shrink: 0;">
+                        <div class="form-card" style="padding: 30px;">
+                            <h3 style="margin-bottom: 20px; font-size: 1.1rem; color: var(--text-muted);">CATEGORIES</h3>
+                            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                                <input type="text" id="new-category-name" placeholder="Add new..." 
+                                    style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-light); outline: none;">
+                                <button class="icon-btn" onclick="app.addCategory()" style="background: var(--accent-blue); color: white; width: 45px; height: 45px; border-radius: 10px;">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                ${categories.map(c => `
+                                    <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                                        ${c.name} <i class="fa-solid fa-xmark" style="cursor: pointer; opacity: 0.5;" onclick="app.deleteCategory('${c.id}', '${c.name}')"></i>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="form-card" style="padding: 30px;">
+                            <h3 style="margin-bottom: 20px; font-size: 1.1rem; color: var(--text-muted);">REGISTER ITEM</h3>
+                            <div style="display: flex; flex-direction: column; gap: 15px;">
+                                <div class="input-field"><label>Item Name</label><input id="n" type="text" placeholder="e.g. Paracetamol"></div>
+                                <div class="input-field"><label>Strength/Specs</label><input id="mg" type="text" placeholder="e.g. 500mg"></div>
+                                <div class="input-field">
+                                    <label>Category</label>
+                                    <select id="c" style="width: 100%; padding: 14px; border-radius: 12px; background: #f1f5f9; border: none; font-weight: 600; outline: none;">
+                                        <option value="">Select Category</option>
+                                        ${categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div class="input-field"><label>Quantity</label><input id="q" type="number" placeholder="0"></div>
+                                    <div class="input-field"><label>Expiration</label><input id="e" type="date"></div>
+                                </div>
+                                <button onclick="ui.handleSave()" style="margin-top: 10px; background: var(--accent-blue); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;">
+                                    Save to Cloud
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>`;
         }
 
         if(tab === 'reports') {
             root.innerHTML = `
-                <div class="no-print" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
-                    <h3>Audit Reports</h3>
-                    <button class="btn-submit" onclick="window.print()" style="width:auto; padding: 0 20px;">
-                         <i class="fa-solid fa-print"></i> Print PDF
+                <div class="no-print" style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="font-weight: 800;">Transaction Audit</h2>
+                    <button onclick="window.print()" class="nav-link active" style="border: none; padding: 10px 20px;">
+                        <i class="fa-solid fa-print"></i> Export PDF
                     </button>
                 </div>
-                <div class="table-card print-container">
-                    <div class="print-only" style="margin-bottom: 20px; text-align: center;">
-                        <h2 style="margin:0;">PYXIS INVENTORY SYSTEM</h2>
-                        <p style="margin:5px 0;">Official Audit Transaction Report</p>
-                        <small>Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</small>
-                        <hr style="margin-top:15px; border: 0; border-top: 1px solid #eee;">
-                    </div>
+                <div class="table-card">
                     <table class="modern-table">
                         <thead>
-                            <tr>
-                                <th>Date & Time</th>
-                                <th>Item Name</th>
-                                <th>Action</th>
-                                <th>Quantity</th>
-                                <th>Status</th>
-                            </tr>
+                            <tr><th>Date & Time</th><th>Item Name</th><th>Action</th><th>Qty Change</th><th>Status</th></tr>
                         </thead>
                         <tbody id="audit-table-body">
-                            <tr><td colspan="5" style="text-align:center;">Loading transactions...</td></tr>
+                            <tr><td colspan="5" style="text-align:center; padding: 40px;">Fetching logs...</td></tr>
                         </tbody>
                     </table>
                 </div>`;
@@ -349,41 +325,34 @@ const ui = {
         
         tbody.innerHTML = data.map(log => {
             const dateObj = new Date(log.created_at);
-            const dateStr = dateObj.toLocaleDateString();
-            const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
             return `
                 <tr>
-                    <td>
-                        <span style="font-weight:600; display:block;">${dateStr}</span>
-                        <small style="color:#64748b;">${timeStr}</small>
-                    </td>
+                    <td><span style="font-weight:700;">${dateObj.toLocaleDateString()}</span><br><small style="color:var(--text-muted)">${dateObj.toLocaleTimeString()}</small></td>
                     <td><strong>${log.item_name}</strong></td>
-                    <td>${log.type || 'Dispensed'}</td>
-                    <td style="color:#ef4444; font-weight:bold;">-${log.quantity}</td>
-                    <td><span style="color:green">● ${log.status || 'Success'}</span></td>
-                </tr>
-            `;
+                    <td><span style="text-transform: uppercase; font-size: 0.75rem; font-weight: 800; color: var(--accent-blue);">${log.type || 'Dispensed'}</span></td>
+                    <td style="color:var(--danger); font-weight:bold;">-${log.quantity}</td>
+                    <td><span style="color:#22c55e; font-weight:700;">● Completed</span></td>
+                </tr>`;
         }).join('');
     },
 
-    createRow(m, isMed) {
+    createRow(m) {
         const expStatus = this.getExpiryStatus(m.exp);
         const isLow = m.qty < 10;
         return `
-            <tr class="${(isLow || expStatus.isCritical) ? 'row-critical' : ''}">
+            <tr class="${(isLow || expStatus.isCritical) ? 'critical-row' : ''}">
                 <td>
-                    <span style="display:block; font-weight:700;">${m.name}</span>
-                    ${isMed ? `<span style="font-size:0.8rem; color:#64748b;">${m.mg} mg</span>` : ''}
+                    <span style="display:block; font-weight:700; font-size: 1rem;">${m.name}</span>
+                    <span style="font-size:0.8rem; font-weight: 600; color:var(--text-muted);">${m.mg || 'N/A'}</span>
                 </td>
-                <td><span class="stock-indicator" style="background:#f1f5f9; color:#475569;">${m.cat}</span></td>
-                <td><span class="stock-indicator ${isLow ? 'critical' : 'stable'}">${m.qty} Units</span></td>
+                <td><span style="background:var(--bg-light); padding:5px 10px; border-radius:6px; font-size:0.75rem; font-weight:700; color: var(--text-muted);">${m.cat}</span></td>
+                <td><span class="stock-indicator ${isLow ? 'critical' : 'stable'}" style="padding: 6px 12px; border-radius: 8px; font-weight: 800;">${m.qty} Units</span></td>
                 <td><span style="${expStatus.style}">${m.exp || '--'}</span></td>
                 <td style="text-align:right" class="no-print">
-                    <button class="icon-btn" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name.replace(/'/g, "\\'")}', '${isMed ? 'inventory' : 'supplies'}')">
+                    <button class="icon-btn" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name.replace(/'/g, "\\'")}')">
                         <i class="fa-solid fa-minus-circle"></i>
                     </button>
-                    <button class="icon-btn" style="color:red; margin-left:10px;" onclick="app.deleteItem('${m.id}')">
+                    <button class="icon-btn" style="color:var(--danger); margin-left:15px;" onclick="app.deleteItem('${m.id}')">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </td>
@@ -397,10 +366,10 @@ const ui = {
         const q = document.getElementById('q').value;
         const e = document.getElementById('e').value;
         if(n && q && c) app.saveMed(n, mg, c, q, e);
-        else alert("Fill in Name, Category, and Quantity.");
+        else alert("Item Name, Category, and Quantity are required.");
     },
 
-    async dispense(id, currentQty, name, redirectTab) {
+    async dispense(id, currentQty, name) {
         const v = prompt(`Dispense ${name}?\nHow many units to remove?`);
         if(v) { 
             const removeQty = parseInt(v);
@@ -409,7 +378,7 @@ const ui = {
             const success = await app.updateQty(id, newQty);
             if(success) {
                 await app.logTransaction(name, 'Dispensed', removeQty, 'Success');
-                this.view(redirectTab);
+                ui.render('inventory');
             }
         }
     }

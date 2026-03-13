@@ -9,13 +9,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Print optimization to hide UI elements during printing */
         @media print {
-            .sidebar, .top-nav, .btn-submit, .search-container, .nav-icons { display: none !important; }
+            .sidebar, .top-nav, .btn-submit, .search-container, .nav-icons, .management-grid { display: none !important; }
             .main-body { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
             .app-shell { display: block !important; }
             .table-card { box-shadow: none !important; border: 1px solid #eee; }
             body { background: white !important; }
+        }
+        
+        /* Layout for the merged Inventory View */
+        .management-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .category-pills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            max-height: 120px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -66,16 +81,7 @@
                         <i class="fa-solid fa-house"></i> <span>Dashboard</span>
                     </div>
                     <div class="nav-link" onclick="ui.view('inventory')" id="tab-inventory">
-                        <i class="fa-solid fa-pills"></i> <span>Inventory List</span>
-                    </div>
-                    <div class="nav-link" onclick="ui.view('add')" id="tab-add">
-                        <i class="fa-solid fa-square-plus"></i> <span>New Supply</span>
-                    </div>
-                    <div class="nav-link" onclick="ui.view('supplies')" id="tab-supplies">
-                        <i class="fa-solid fa-briefcase-medical"></i> <span>Medical Supplies</span>
-                    </div>
-                    <div class="nav-link" onclick="ui.view('categories')" id="tab-categories">
-                        <i class="fa-solid fa-tags"></i> <span>Categories</span>
+                        <i class="fa-solid fa-boxes-stacked"></i> <span>Inventory Control</span>
                     </div>
                     <div class="nav-link" onclick="ui.view('reports')" id="tab-reports">
                         <i class="fa-solid fa-file-contract"></i> <span>Audit Reports</span>
@@ -98,7 +104,7 @@
 
                 <div class="search-wrapper">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="global-search" placeholder="Quick search across inventory..." onkeyup="ui.filterInventory()">
+                    <input type="text" id="global-search" placeholder="Quick search..." onkeyup="ui.filterInventory()">
                 </div>
                 
                 <div class="header-tools">
@@ -123,17 +129,13 @@
     </div>
 
     <template id="tpl-dashboard">
-        <div class="stats-row" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px;">
+        <div class="stats-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
             <div class="stat-card">
                 <div class="icon-circle bg-blue"><i class="fa-solid fa-pills"></i></div>
-                <div><h3 id="stat-count">0</h3><p>Medicines</p></div>
+                <div><h3 id="stat-count">0</h3><p>Total Items</p></div>
             </div>
             <div class="stat-card">
-                <div class="icon-circle" style="background:#e0f2fe; color:#0ea5e9;"><i class="fa-solid fa-briefcase-medical"></i></div>
-                <div><h3 id="stat-supplies">0</h3><p>Supplies</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="icon-circle bg-green"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <div class="icon-circle bg-green"><i class="fa-solid fa-cubes"></i></div>
                 <div><h3 id="stat-units">0</h3><p>Total Units</p></div>
             </div>
             <div class="stat-card" id="card-low-stock">
@@ -153,26 +155,49 @@
             <p style="margin-top: 15px; font-weight: 600;">
                 Connection: <span style="color: #22c55e;">● Cloud Sync Active</span>
             </p>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">
-                Secure connection established with Supabase PostgreSQL.
-            </p>
         </div>
     </template>
 
     <template id="tpl-inventory">
-        <div class="search-container" style="margin-bottom: 20px;">
-            <div class="form-group" style="max-width: 400px; position: relative;">
-                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 15px; color: var(--text-muted);"></i>
-                <input type="text" id="search-bar" placeholder="Search by medicine name..." 
-                       onkeyup="ui.filterInventory()" 
-                       style="padding-left: 45px; border-radius: 12px;">
+        <div class="management-grid">
+            <div class="form-card">
+                <div class="form-header">
+                    <i class="fa-solid fa-tags" style="color: var(--accent-blue);"></i>
+                    <h3>Categories</h3>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 15px;">
+                    <input type="text" id="new-category-name" placeholder="New Category..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                    <button class="btn-submit" onclick="app.addCategory()" style="margin: 0; width: auto; padding: 0 15px;">Add</button>
+                </div>
+                <div id="categories-list" class="category-pills-container"></div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-header">
+                    <i class="fa-solid fa-circle-plus" style="color: var(--accent-blue);"></i>
+                    <h3>Quick Register</h3>
+                </div>
+                <div class="form-grid" style="margin-top: 15px;">
+                    <div class="form-group"><input type="text" id="n" placeholder="Item Name" required></div>
+                    <div class="form-group"><select id="c" required><option value="">Select Category</option></select></div>
+                    <div class="form-group"><input type="number" id="q" placeholder="Qty" required></div>
+                    <div class="form-group"><input type="date" id="e" required></div>
+                </div>
+                <button class="btn-submit" onclick="ui.handleSave()" style="margin-top: 15px;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Save to Inventory
+                </button>
             </div>
         </div>
+
         <div class="table-card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-weight: 800;">INVENTORY LIST</h3>
+                <input type="text" id="search-bar" placeholder="Filter list..." onkeyup="ui.filterInventory()" style="max-width: 300px; padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border);">
+            </div>
             <table class="modern-table">
                 <thead>
                     <tr>
-                        <th>MEDICINE DETAILS</th>
+                        <th>ITEM DETAILS</th>
                         <th>CATEGORY</th>
                         <th>STOCK LEVEL</th>
                         <th>EXPIRY</th>
@@ -184,95 +209,11 @@
         </div>
     </template>
 
-    <template id="tpl-supplies">
-        <div class="search-container" style="margin-bottom: 20px;">
-            <div class="form-group" style="max-width: 400px; position: relative;">
-                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 15px; color: var(--text-muted);"></i>
-                <input type="text" id="search-bar-supplies" placeholder="Search supplies..." 
-                       onkeyup="ui.filterSupplies()" 
-                       style="padding-left: 45px; border-radius: 12px;">
-            </div>
-        </div>
-        <div class="table-card">
-            <table class="modern-table">
-                <thead>
-                    <tr>
-                        <th>SUPPLY ITEM</th>
-                        <th>CATEGORY</th>
-                        <th>STOCK LEVEL</th>
-                        <th>EXPIRY</th>
-                        <th style="text-align:right">ACTIONS</th>
-                    </tr>
-                </thead>
-                <tbody id="supplies-table-body"></tbody>
-            </table>
-        </div>
-    </template>
-
-    <template id="tpl-add">
-        <div class="form-card">
-            <div class="form-header">
-                <i class="fa-solid fa-circle-plus" style="color: var(--accent-blue);"></i>
-                <h2 style="display: inline; margin-left: 10px;">Register New Item</h2>
-            </div>
-            <div style="margin-top: 30px;">
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label>Name</label>
-                        <input type="text" id="n" placeholder="Enter name" required autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label>Dosage (mg) <small>(Leave blank for supplies)</small></label>
-                        <input type="text" id="mg" placeholder="500">
-                    </div>
-                    <div class="form-group">
-                        <label>Category</label>
-                        <select id="c" required></select> </div>
-                    <div class="form-group">
-                        <label>Initial Quantity</label>
-                        <input type="number" id="q" placeholder="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Expiration Date</label>
-                        <input type="date" id="e" required>
-                    </div>
-                </div>
-                <button type="button" class="btn-submit" onclick="ui.handleSave()">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Save to Cloud
-                </button>
-            </div>
-        </div>
-    </template>
-
-    <template id="tpl-categories">
-        <div class="form-card" style="max-width: 600px; margin-bottom: 30px;">
-            <div class="form-header">
-                <i class="fa-solid fa-tags" style="color: var(--accent-blue);"></i>
-                <h2 style="display: inline; margin-left: 10px;">Add New Category</h2>
-            </div>
-            <div class="form-group" style="display: flex; gap: 10px; margin-top: 20px;">
-                <input type="text" id="new-category-name" placeholder="e.g., Antibiotics" style="flex: 1;">
-                <button class="btn-submit" onclick="app.addCategory()" style="margin-top: 0; width: auto; padding: 0 25px;">
-                    <i class="fa-solid fa-plus"></i> Add
-                </button>
-            </div>
-        </div>
-
-        <div class="form-card" style="max-width: 600px;">
-            <div class="form-header">
-                <i class="fa-solid fa-list-ul" style="color: var(--accent-blue);"></i>
-                <h2 style="display: inline; margin-left: 10px; font-size: 1.2rem;">Active Categories</h2>
-            </div>
-            <div id="categories-list" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px;">
-            </div>
-        </div>
-    </template>
-
     <template id="tpl-reports">
         <div class="form-card" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
             <div>
-                <h2 style="margin-bottom: 5px;">Pharmacy Audit Report</h2>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Review recent dispensing history and inventory movements.</p>
+                <h2>Pharmacy Audit Report</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Full historical logs of movements.</p>
             </div>
             <button class="btn-submit" onclick="window.print()" style="width: auto; padding: 0 30px;">
                 <i class="fa-solid fa-print"></i> Generate PDF
@@ -280,10 +221,6 @@
         </div>
 
         <div class="table-card">
-            <div class="form-header" style="padding: 20px; border-bottom: 1px solid #f1f5f9;">
-                <i class="fa-solid fa-clock-rotate-left" style="color: var(--accent-blue);"></i>
-                <h3 style="display: inline; margin-left: 10px;">Recent Transactions</h3>
-            </div>
             <table class="modern-table">
                 <thead>
                     <tr>
@@ -294,8 +231,7 @@
                         <th>STATUS</th>
                     </tr>
                 </thead>
-                <tbody id="audit-table-body">
-                    </tbody>
+                <tbody id="audit-table-body"></tbody>
             </table>
         </div>
     </template>
