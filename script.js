@@ -104,7 +104,6 @@ const app = {
         }
     },
 
-    // UPDATED: Now creates a log entry before deleting
     async deleteItem(id) {
         const itemToDelete = inventory.find(m => m.id === id);
         if (!itemToDelete) return;
@@ -113,7 +112,6 @@ const app = {
             const { error } = await _supabase.from('inventory').delete().eq('id', id);
             
             if(!error) {
-                // Log the deletion so you have a record of what was removed
                 await this.logTransaction(itemToDelete.name, 'REMOVED', itemToDelete.qty, 'Data Deleted');
                 await this.init();
             } else {
@@ -312,7 +310,7 @@ const ui = {
                                     <div class="input-field"><label>Quantity</label><input id="q" type="number" placeholder="0"></div>
                                     <div class="input-field"><label>Expiration</label><input id="e" type="date"></div>
                                 </div>
-                                <button onclick="ui.handleSave()" style="margin-top: 10px; background: var(--accent-blue); color: white; border: none; padding: 166px; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;">
+                                <button onclick="ui.handleSave()" style="margin-top: 10px; background: var(--accent-blue); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;">
                                     Save to Cloud
                                 </button>
                             </div>
@@ -358,7 +356,6 @@ const ui = {
         
         tbody.innerHTML = data.map(log => {
             const dateObj = new Date(log.created_at);
-            // Dynamic color for "REMOVED" action
             const actionColor = log.type === 'REMOVED' ? 'var(--danger)' : 'var(--accent-blue)';
             const statusLabel = log.type === 'REMOVED' ? '● Data Deleted' : '● Completed';
             const statusColor = log.type === 'REMOVED' ? '#ef4444' : '#22c55e';
@@ -418,9 +415,7 @@ const ui = {
             
             const success = await app.updateQty(id, newQty);
             if(success) {
-                // We await the log to ensure it hits the DB before refreshing
                 await app.logTransaction(name, 'Dispensed', removeQty, 'Success');
-                // Re-run init to get fresh data and re-render the current view
                 await app.init();
                 alert(`Dispensed ${removeQty} units of ${name}`);
             }
