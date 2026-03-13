@@ -78,10 +78,8 @@ const app = {
         }
     },
 
-    // NEW FUNCTION: Clear logs from Supabase
     async clearAuditLogs() {
         if(confirm("Are you sure you want to permanently delete ALL transaction history from the cloud?")) {
-            // Deletes all records from the 'logs' table
             const { error } = await _supabase.from('logs').delete().neq('item_name', 'placeholder_force_delete'); 
             
             if(!error) {
@@ -106,11 +104,21 @@ const app = {
         }
     },
 
+    // UPDATED: Now creates a log entry before deleting
     async deleteItem(id) {
-        if(confirm(`Delete this item permanently?`)) {
+        const itemToDelete = inventory.find(m => m.id === id);
+        if (!itemToDelete) return;
+
+        if(confirm(`Delete "${itemToDelete.name}" permanently? This will be recorded in the audit logs.`)) {
             const { error } = await _supabase.from('inventory').delete().eq('id', id);
-            if(!error) await this.init();
-            else alert("Delete Failed: " + error.message);
+            
+            if(!error) {
+                // Log the deletion so you have a record of what was removed
+                await this.logTransaction(itemToDelete.name, 'REMOVED', itemToDelete.qty, 'Data Deleted');
+                await this.init();
+            } else {
+                alert("Delete Failed: " + error.message);
+            }
         }
     },
 
@@ -350,13 +358,18 @@ const ui = {
         
         tbody.innerHTML = data.map(log => {
             const dateObj = new Date(log.created_at);
+            // Dynamic color for "REMOVED" action
+            const actionColor = log.type === 'REMOVED' ? 'var(--danger)' : 'var(--accent-blue)';
+            const statusLabel = log.type === 'REMOVED' ? '● Data Deleted' : '● Completed';
+            const statusColor = log.type === 'REMOVED' ? '#ef4444' : '#22c55e';
+
             return `
                 <tr>
                     <td><span style="font-weight:700;">${dateObj.toLocaleDateString()}</span><br><small style="color:var(--text-muted)">${dateObj.toLocaleTimeString()}</small></td>
                     <td><strong>${log.item_name}</strong></td>
-                    <td><span style="text-transform: uppercase; font-size: 0.75rem; font-weight: 800; color: var(--accent-blue);">${log.type || 'Dispensed'}</span></td>
+                    <td><span style="text-transform: uppercase; font-size: 0.75rem; font-weight: 800; color: ${actionColor};">${log.type || 'Dispensed'}</span></td>
                     <td style="color:var(--danger); font-weight:bold;">-${log.quantity}</td>
-                    <td><span style="color:#22c55e; font-weight:700;">● Completed</span></td>
+                    <td><span style="color:${statusColor}; font-weight:700;">${statusLabel}</span></td>
                 </tr>`;
         }).join('');
     },
