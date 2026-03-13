@@ -164,6 +164,14 @@ const app = {
 };
 
 const ui = {
+    // NEW: Function to handle the three-line menu click
+    toggleSidebar: function() {
+        const sidebar = document.getElementById('main-sidebar');
+        if (sidebar) {
+            sidebar.classList.toggle('closed');
+        }
+    },
+
     // Methodology: Automated Expiration Monitoring Logic
     getExpiryStatus(dateStr) {
         if (!dateStr) return { isCritical: false, style: '' };
