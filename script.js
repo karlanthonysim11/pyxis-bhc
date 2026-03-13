@@ -164,7 +164,6 @@ const app = {
 };
 
 const ui = {
-    // NEW: Function to handle the three-line menu click
     toggleSidebar: function() {
         const sidebar = document.getElementById('main-sidebar');
         if (sidebar) {
@@ -172,17 +171,19 @@ const ui = {
         }
     },
 
-    // Methodology: Automated Expiration Monitoring Logic
     getExpiryStatus(dateStr) {
         if (!dateStr) return { isCritical: false, style: '' };
         const diffDays = Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
-        // Critical alert if 30 days or less remaining
         if (diffDays <= 30) return { isCritical: true, style: 'color: #ef4444; font-weight: 800;' };
         return { isCritical: false, style: '' };
     },
 
+    // Updated: Logic to handle both the top search bar and the table search bars
     filterInventory() {
-        const query = document.getElementById('search-bar').value.toLowerCase();
+        const globalQuery = document.getElementById('global-search')?.value.toLowerCase() || "";
+        const localQuery = document.getElementById('search-bar')?.value.toLowerCase() || "";
+        const query = globalQuery || localQuery;
+
         const rows = document.querySelectorAll('#inventory-table-body tr');
         rows.forEach(row => {
             const text = row.innerText.toLowerCase();
@@ -191,7 +192,10 @@ const ui = {
     },
 
     filterSupplies() {
-        const query = document.getElementById('search-bar-supplies').value.toLowerCase();
+        const globalQuery = document.getElementById('global-search')?.value.toLowerCase() || "";
+        const localQuery = document.getElementById('search-bar-supplies')?.value.toLowerCase() || "";
+        const query = globalQuery || localQuery;
+
         const rows = document.querySelectorAll('#supplies-table-body tr');
         rows.forEach(row => {
             const text = row.innerText.toLowerCase();
