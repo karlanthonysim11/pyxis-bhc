@@ -90,10 +90,15 @@
             </div>
         </aside>
 
-        <main class="main-body">
+        <div class="main-container">
             <header id="main-header" class="top-nav">
                 <div class="nav-left">
                     <span id="view-title">DASHBOARD</span>
+                </div>
+
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="global-search" placeholder="Quick search across inventory..." onkeyup="ui.filterInventory()">
                 </div>
                 
                 <div class="header-tools">
@@ -114,7 +119,7 @@
             </header>
 
             <section id="render-area" class="view-content"></section>
-        </main>
+        </div>
     </div>
 
     <template id="tpl-dashboard">
