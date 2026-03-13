@@ -106,8 +106,8 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 /* --- DASHBOARD STYLING (COVER SPACE) --- */
 .stats-row { 
     display: grid; 
-    /* Changed to auto-fit to ensure they expand to fill the right side */
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    /* This makes cards take up equal space and stretch to the right edge */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
     gap: 30px; 
     margin-bottom: 30px; 
     width: 100%;
@@ -157,8 +157,8 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 /* --- MODERN FORM STYLING (COVERS WHOLE RIGHT SIDE) --- */
 .form-card { 
     background: white; 
-    width: 100%;       /* Stretch to right wall */
-    max-width: none;   /* Removed the limit so it can grow */
+    width: 100%;       /* Fill the whole available right area */
+    max-width: none;   /* Removed limits so it hits the right edge */
     margin: 0; 
     padding: 50px; 
     border-radius: 28px; 
