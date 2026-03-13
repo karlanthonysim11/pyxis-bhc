@@ -101,20 +101,22 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 }
 
 /* --- CONTENT AREA --- */
-.view-content { padding: 40px; overflow-y: auto; flex: 1; }
+.view-content { padding: 40px; overflow-y: auto; flex: 1; width: 100%; }
 
-/* --- DASHBOARD STYLING (EXPANDED) --- */
+/* --- DASHBOARD STYLING (EXPANDED TO COVER SPACE) --- */
 .stats-row { 
     display: grid; 
-    grid-template-columns: repeat(3, 1fr); /* 3 wider columns instead of 4 or 5 */
+    /* This makes cards automatically fill the width based on available space */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
     gap: 30px; 
     margin-bottom: 30px; 
+    width: 100%;
 }
 
 .stat-card { 
     background: white; 
-    padding: 40px 30px; /* Increased padding */
-    min-height: 180px;   /* Added minimum height to fill space vertically */
+    padding: 40px 30px; 
+    min-height: 180px; 
     border-radius: 24px; 
     border: 1px solid var(--border);
     display: flex; 
@@ -151,10 +153,16 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .bg-green { background: #dcfce7; color: #22c55e; }
 .bg-red { background: #fef2f2; color: #ef4444; animation: pulse 2s infinite; }
 
-/* --- MODERN FORM STYLING --- */
+/* --- MODERN FORM STYLING (WIDER) --- */
 .form-card { 
-    background: white; max-width: 750px; margin: 0 auto; padding: 50px; 
-    border-radius: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border); 
+    background: white; 
+    width: 100%; 
+    max-width: 1000px; /* Increased from 750px to cover more space */
+    margin: 0; 
+    padding: 50px; 
+    border-radius: 28px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+    border: 1px solid var(--border); 
 }
 .form-header { margin-bottom: 30px; display: flex; align-items: center; gap: 12px; }
 .form-header h3 { font-weight: 800; font-size: 1.5rem; color: var(--text-dark); }
@@ -174,7 +182,7 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .btn-submit:hover { background: var(--accent-dark); transform: translateY(-2px); }
 
 /* --- TABLE STYLING --- */
-.table-card { background: white; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--card-shadow); overflow: hidden; }
+.table-card { background: white; border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--card-shadow); overflow: hidden; width: 100%; }
 .modern-table { width: 100%; border-collapse: collapse; }
 .modern-table th { background: #f8fafc; padding: 18px 20px; text-align: left; color: #94a3b8; font-size: 0.75rem; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
 .modern-table td { padding: 20px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
