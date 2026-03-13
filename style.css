@@ -50,6 +50,36 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 }
 .input-field input:focus { background: white; border-color: var(--accent-blue); box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); }
 
+/* --- NEW MODERN BUTTON STYLING --- */
+.btn-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px 28px;
+    background-color: var(--nav-dark);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-submit:hover {
+    background-color: var(--accent-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-submit:active {
+    transform: translateY(1px);
+}
+
 /* --- MAIN LAYOUT --- */
 .app-shell { 
     display: flex; 
