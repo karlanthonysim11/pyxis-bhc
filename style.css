@@ -69,6 +69,16 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .sidebar.closed .sidebar-brand, 
 .sidebar.closed .nav-link span { opacity: 0; pointer-events: none; white-space: nowrap; }
 .sidebar.closed .nav-link { justify-content: center; padding: 14px 0; margin: 4px 10px; }
+
+/* Hamburger Menu Icon Styling */
+.sidebar-toggle {
+    padding: 10px 25px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.2s;
+    font-size: 1.2rem;
+}
+.sidebar-toggle:hover { color: white; }
 .sidebar.closed .sidebar-toggle { text-align: center; padding: 10px 0; }
 
 /* --- TOP NAVIGATION --- */
