@@ -102,30 +102,29 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     font-weight: 800; border: 2px solid white;
 }
 
-/* --- CONTENT AREA (FIXED FOR TOP ALIGNMENT) --- */
+/* --- CONTENT AREA (FIXED: ALIGN TO TOP) --- */
 .view-content { 
     padding: 40px; 
     overflow-y: auto; 
     flex: 1; 
-    display: block; /* Ensures items stack normally from the top */
+    display: block; /* Changed from flex to block to force content to the top */
     width: 100%; 
 }
 
-/* --- DASHBOARD STYLING (FIXED TO SPREAD CLEANLY AT TOP) --- */
+/* --- DASHBOARD STYLING (FIXED: HORIZONTAL SPREAD) --- */
 .stats-row { 
     display: grid; 
-    /* Force cards to fill the width in one row */
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    /* Force 3 columns so they spread across the top */
+    grid-template-columns: repeat(3, 1fr); 
     gap: 30px; 
     margin-bottom: 30px; 
     width: 100%;
-    align-items: start;
 }
 
 .stat-card { 
     background: white; 
-    padding: 40px 30px; 
-    min-height: 180px; 
+    padding: 30px; 
+    min-height: 160px; 
     border-radius: 24px; 
     border: 1px solid var(--border);
     display: flex; 
@@ -133,7 +132,6 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     gap: 25px; 
     box-shadow: var(--card-shadow);
     transition: all 0.3s ease;
-    width: 100%; 
 }
 
 .stat-card:hover { transform: translateY(-8px); }
@@ -167,7 +165,7 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .form-card { 
     background: white; 
     width: 100%;       
-    max-width: none;   
+    max-width: 800px; /* Optional: keeps the form from being too wide on giant screens */
     margin: 0; 
     padding: 50px; 
     border-radius: 28px; 
