@@ -103,11 +103,11 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 /* --- CONTENT AREA --- */
 .view-content { padding: 40px; overflow-y: auto; flex: 1; width: 100%; }
 
-/* --- DASHBOARD STYLING (EXPANDED TO COVER SPACE) --- */
+/* --- DASHBOARD STYLING (MODIFIED TO COVER SPACE) --- */
 .stats-row { 
     display: grid; 
-    /* This makes cards automatically fill the width based on available space */
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+    /* This makes the cards STRETCH to fill the right side */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
     gap: 30px; 
     margin-bottom: 30px; 
     width: 100%;
@@ -124,11 +124,12 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     gap: 25px; 
     box-shadow: var(--card-shadow);
     transition: all 0.3s ease;
+    width: 100%; /* Stretch to fill grid cell */
 }
 
 .stat-card:hover { transform: translateY(-8px); }
 
-/* REVISED: Much bigger base icons */
+/* Much bigger base icons */
 .icon-circle { 
     width: 85px; 
     height: 85px; 
@@ -153,11 +154,11 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
 .bg-green { background: #dcfce7; color: #22c55e; }
 .bg-red { background: #fef2f2; color: #ef4444; animation: pulse 2s infinite; }
 
-/* --- MODERN FORM STYLING (WIDER) --- */
+/* --- MODERN FORM STYLING (MODIFIED TO FILL RIGHT SIDE) --- */
 .form-card { 
     background: white; 
-    width: 100%; 
-    max-width: 1000px; /* Increased from 750px to cover more space */
+    width: 100%;       /* Fill available space */
+    max-width: none;   /* Remove restriction so it covers the space */
     margin: 0; 
     padding: 50px; 
     border-radius: 28px; 
