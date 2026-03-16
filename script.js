@@ -250,6 +250,15 @@ const ui = {
         this.render(tab);
     },
 
+    // Helper for showing/hiding fields based on type selection
+    toggleTypeFields() {
+        const type = document.getElementById('item_type').value;
+        const medFields = document.getElementById('medicine-only-fields');
+        if (medFields) {
+            medFields.style.display = (type === 'Medicine') ? 'block' : 'none';
+        }
+    },
+
     async render(tab) {
         const root = document.getElementById('render-area');
         if(!root) return;
@@ -312,11 +321,13 @@ const ui = {
                                         <option value="Syrup">Syrup</option>
                                         <option value="Tablet">Tablet</option>
                                         <option value="Capsule">Capsule</option>
+                                        <option value="Supply">Supply</option>
                                     </select>
                                     <select id="filter-target" onchange="ui.filterInventory()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-weight: 600;">
                                         <option value="">All Targets</option>
                                         <option value="Adult">Adult</option>
                                         <option value="Kids">Kids</option>
+                                        <option value="General">General</option>
                                     </select>
                                     <button onclick="window.print()" class="no-print" style="background: var(--nav-dark); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-weight: 700; cursor: pointer;">
                                         <i class="fa-solid fa-print"></i>
@@ -356,9 +367,20 @@ const ui = {
                         <div class="form-card" style="padding: 30px;">
                             <h3 style="margin-bottom: 20px; font-size: 1.1rem; color: var(--text-muted);">REGISTER ITEM</h3>
                             <div style="display: flex; flex-direction: column; gap: 15px;">
-                                <div class="input-field"><label>Brand Name</label><input id="n" type="text" placeholder="e.g. Biogesic"></div>
-                                <div class="input-field"><label>Subname / Generic</label><input id="sn" type="text" placeholder="e.g. Paracetamol"></div>
-                                <div class="input-field"><label>Strength/Specs</label><input id="mg" type="text" placeholder="e.g. 500mg"></div>
+                                <div class="input-field">
+                                    <label>Classification</label>
+                                    <select id="item_type" onchange="ui.toggleTypeFields()" class="custom-select" style="width:100%; padding:10px; border-radius:10px; background:#f1f5f9; border:none; font-weight:700;">
+                                        <option value="Medicine">Medicine (Tablets, Syrup, etc)</option>
+                                        <option value="Supply">Medical Supply (Gloves, Mask, etc)</option>
+                                    </select>
+                                </div>
+
+                                <div class="input-field"><label>Item / Brand Name</label><input id="n" type="text" placeholder="e.g. Biogesic or Indoplas"></div>
+                                
+                                <div id="medicine-only-fields">
+                                    <div class="input-field"><label>Subname / Generic</label><input id="sn" type="text" placeholder="e.g. Paracetamol"></div>
+                                    <div class="input-field"><label>Strength/Specs</label><input id="mg" type="text" placeholder="e.g. 500mg"></div>
+                                </div>
                                 
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                     <div class="input-field">
@@ -367,6 +389,9 @@ const ui = {
                                             <option value="Tablet">Tablet</option>
                                             <option value="Syrup">Syrup</option>
                                             <option value="Capsule">Capsule</option>
+                                            <option value="Piece">Piece</option>
+                                            <option value="Box">Box</option>
+                                            <option value="Pair">Pair</option>
                                         </select>
                                     </div>
                                     <div class="input-field">
@@ -374,6 +399,7 @@ const ui = {
                                         <select id="target_audience" class="custom-select" style="width:100%; padding:10px; border-radius:10px; background:#f1f5f9; border:none;">
                                             <option value="Adult">Adult</option>
                                             <option value="Kids">Kids</option>
+                                            <option value="General">General</option>
                                         </select>
                                     </div>
                                 </div>
@@ -522,11 +548,11 @@ const ui = {
             <tr class="${(isLow || expStatus.isCritical) ? 'critical-row' : ''}" data-unit="${m.unit_type}" data-target="${m.target}">
                 <td>
                     <span style="display:block; font-weight:700; font-size: 1rem;">${m.name}</span>
-                    <small style="color:var(--accent-blue); font-weight:600; text-transform:uppercase;">${m.subname || ''}</small> <small style="font-size:0.8rem; font-weight: 600; color:var(--text-muted);">${m.mg || 'N/A'}</small>
+                    <small style="color:var(--accent-blue); font-weight:600; text-transform:uppercase;">${m.subname || ''}</small> <small style="font-size:0.8rem; font-weight: 600; color:var(--text-muted);">${m.mg || ''}</small>
                 </td>
                 <td>
                     <span style="font-size:0.75rem; font-weight:700; color:#64748b;">${m.unit_type || 'N/A'}</span><br>
-                    <small style="color: ${m.target === 'Kids' ? '#0ea5e9' : '#6366f1'}; font-weight:800;">${m.target || 'N/A'}</small>
+                    <small style="color: ${m.target === 'Kids' ? '#0ea5e9' : (m.target === 'Adult' ? '#6366f1' : '#64748b')}; font-weight:800;">${m.target || 'N/A'}</small>
                 </td>
                 <td><span style="background:var(--bg-light); padding:5px 10px; border-radius:6px; font-size:0.75rem; font-weight:700; color: var(--text-muted);">${m.cat}</span></td>
                 <td><span class="stock-indicator ${isLow ? 'critical' : 'stable'}" style="padding: 6px 12px; border-radius: 8px; font-weight: 800;">${m.qty} Stocks</span></td>
@@ -543,14 +569,18 @@ const ui = {
     },
 
     handleSave() {
+        const type = document.getElementById('item_type').value;
         const n = document.getElementById('n').value;
-        const sn = document.getElementById('sn').value;
-        const mg = document.getElementById('mg').value;
+        // If it's a supply, we send empty strings for subname and mg
+        const sn = (type === 'Medicine') ? document.getElementById('sn').value : "";
+        const mg = (type === 'Medicine') ? document.getElementById('mg').value : "";
+        
         const c = document.getElementById('c').value;
         const q = document.getElementById('q').value;
         const e = document.getElementById('e').value;
         const ut = document.getElementById('unit_type').value;
         const tg = document.getElementById('target_audience').value;
+        
         if(n && q && c) app.saveMed(n, sn, mg, c, q, e, ut, tg);
         else alert("Item Name, Category, and Quantity are required.");
     },
