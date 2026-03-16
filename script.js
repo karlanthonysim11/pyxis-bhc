@@ -106,11 +106,12 @@ const app = {
         }
     },
 
-    async saveMed(n, mg, c, q, e, unit_type, target) {
+    async saveMed(n, sn, mg, c, q, e, unit_type, target) {
         const { error } = await _supabase
             .from('inventory')
             .insert([{ 
                 name: n, 
+                subname: sn,
                 mg: mg, 
                 cat: c, 
                 qty: parseInt(q), 
@@ -303,7 +304,7 @@ const ui = {
                             <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center;">
                                 <div class="search-wrapper" style="margin: 0; width: 40%;">
                                     <i class="fa-solid fa-magnifying-glass"></i>
-                                    <input type="text" id="search-bar" placeholder="Search..." onkeyup="ui.filterInventory()">
+                                    <input type="text" id="search-bar" placeholder="Search item or subname..." onkeyup="ui.filterInventory()">
                                 </div>
                                 <div style="display: flex; gap: 8px;">
                                     <select id="filter-unit-type" onchange="ui.filterInventory()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-weight: 600;">
@@ -355,7 +356,8 @@ const ui = {
                         <div class="form-card" style="padding: 30px;">
                             <h3 style="margin-bottom: 20px; font-size: 1.1rem; color: var(--text-muted);">REGISTER ITEM</h3>
                             <div style="display: flex; flex-direction: column; gap: 15px;">
-                                <div class="input-field"><label>Item Name</label><input id="n" type="text" placeholder="e.g. Paracetamol"></div>
+                                <div class="input-field"><label>Brand Name</label><input id="n" type="text" placeholder="e.g. Biogesic"></div>
+                                <div class="input-field"><label>Subname / Generic</label><input id="sn" type="text" placeholder="e.g. Paracetamol"></div>
                                 <div class="input-field"><label>Strength/Specs</label><input id="mg" type="text" placeholder="e.g. 500mg"></div>
                                 
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
@@ -520,7 +522,7 @@ const ui = {
             <tr class="${(isLow || expStatus.isCritical) ? 'critical-row' : ''}" data-unit="${m.unit_type}" data-target="${m.target}">
                 <td>
                     <span style="display:block; font-weight:700; font-size: 1rem;">${m.name}</span>
-                    <span style="font-size:0.8rem; font-weight: 600; color:var(--text-muted);">${m.mg || 'N/A'}</span>
+                    <small style="color:var(--accent-blue); font-weight:600; text-transform:uppercase;">${m.subname || ''}</small> <small style="font-size:0.8rem; font-weight: 600; color:var(--text-muted);">${m.mg || 'N/A'}</small>
                 </td>
                 <td>
                     <span style="font-size:0.75rem; font-weight:700; color:#64748b;">${m.unit_type || 'N/A'}</span><br>
@@ -542,13 +544,14 @@ const ui = {
 
     handleSave() {
         const n = document.getElementById('n').value;
+        const sn = document.getElementById('sn').value;
         const mg = document.getElementById('mg').value;
         const c = document.getElementById('c').value;
         const q = document.getElementById('q').value;
         const e = document.getElementById('e').value;
         const ut = document.getElementById('unit_type').value;
         const tg = document.getElementById('target_audience').value;
-        if(n && q && c) app.saveMed(n, mg, c, q, e, ut, tg);
+        if(n && q && c) app.saveMed(n, sn, mg, c, q, e, ut, tg);
         else alert("Item Name, Category, and Quantity are required.");
     },
 
