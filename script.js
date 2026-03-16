@@ -268,7 +268,7 @@ const ui = {
                 </div>
                 <div class="table-card" style="margin-top: 30px; padding: 25px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                         <h3 style="margin: 0;">Daily Arrivals vs Dispensed</h3>
+                         <h3 style="margin: 0; letter-spacing: 1px; font-weight: 800;">DATA ANALYTICS</h3>
                          <div style="font-size: 0.8rem; font-weight: 700;">
                             <span style="color: #22c55e; margin-right: 15px;">● ARRIVALS</span>
                             <span style="color: #ef4444;">● DISPENSED</span>
