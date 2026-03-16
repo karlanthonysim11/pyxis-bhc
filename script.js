@@ -267,11 +267,20 @@ const ui = {
                     </div>
                 </div>
                 <div class="table-card" style="margin-top: 30px; padding: 25px;">
-                    <h3 style="margin-bottom: 20px;">Daily Arrivals vs Dispensed</h3>
-                    <canvas id="analyticsChart" style="max-height: 350px;"></canvas>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                         <h3 style="margin: 0;">Daily Arrivals vs Dispensed</h3>
+                         <div style="font-size: 0.8rem; font-weight: 700;">
+                            <span style="color: #22c55e; margin-right: 15px;">● ARRIVALS</span>
+                            <span style="color: #ef4444;">● DISPENSED</span>
+                         </div>
+                    </div>
+                    <div style="position: relative; height: 350px; width: 100%;">
+                        <canvas id="analyticsChart"></canvas>
+                    </div>
                 </div>`;
             
-            this.initDashboardAnalytics();
+            // Wait for DOM update before initializing chart
+            setTimeout(() => this.initDashboardAnalytics(), 100);
         }
 
         if(tab === 'inventory') {
@@ -376,7 +385,7 @@ const ui = {
 
         const dailyData = {};
         logs.forEach(log => {
-            const date = new Date(log.created_at).toLocaleDateString();
+            const date = new Date(log.created_at).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' });
             if (!dailyData[date]) dailyData[date] = { arrivals: 0, dispensed: 0 };
             if (log.qty_change > 0) dailyData[date].arrivals += log.qty_change;
             else dailyData[date].dispensed += Math.abs(log.qty_change);
@@ -389,16 +398,50 @@ const ui = {
         const ctx = document.getElementById('analyticsChart')?.getContext('2d');
         if(!ctx) return;
 
-        new Chart(ctx, {
+        // Destroy existing chart to prevent glitches
+        if (window.pyxisChart) window.pyxisChart.destroy();
+
+        window.pyxisChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Arrivals', data: arrivals, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', fill: true, tension: 0.3 },
-                    { label: 'Dispensed', data: dispensed, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 }
+                    { 
+                        label: 'Arrivals', 
+                        data: arrivals, 
+                        borderColor: '#22c55e', 
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)', 
+                        fill: true, 
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 4
+                    },
+                    { 
+                        label: 'Dispensed', 
+                        data: dispensed, 
+                        borderColor: '#ef4444', 
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+                        fill: true, 
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 4
+                    }
                 ]
             },
-            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                } 
+            }
         });
     },
 
