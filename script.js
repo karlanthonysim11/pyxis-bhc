@@ -46,13 +46,11 @@ const app = {
         }
     },
 
-    // NEW REALTIME FUNCTION
     subscribeToLogs() {
         _supabase
             .channel('realtime-logs')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'logs' }, (payload) => {
                 const titleElement = document.getElementById('view-title');
-                // Only trigger a re-render of logs if the user is currently on the Reports tab
                 if (titleElement && titleElement.innerText.includes('REPORTS')) {
                     ui.loadAuditLogs();
                 }
@@ -108,10 +106,18 @@ const app = {
         }
     },
 
-    async saveMed(n, mg, c, q, e) {
+    async saveMed(n, mg, c, q, e, unit_type, target) {
         const { error } = await _supabase
             .from('inventory')
-            .insert([{ name: n, mg: mg, cat: c, qty: parseInt(q), exp: e }]);
+            .insert([{ 
+                name: n, 
+                mg: mg, 
+                cat: c, 
+                qty: parseInt(q), 
+                exp: e,
+                unit_type: unit_type,
+                target: target 
+            }]);
             
         if(!error) {
             await this.logTransaction(n, 'Added to Inventory', q, 'Success');
@@ -217,10 +223,17 @@ const ui = {
 
     filterInventory() {
         const query = document.getElementById('search-bar')?.value.toLowerCase() || "";
+        const typeFilter = document.getElementById('filter-unit-type')?.value || "";
+        const targetFilter = document.getElementById('filter-target')?.value || "";
+
         const rows = document.querySelectorAll('#inventory-table-body tr');
         rows.forEach(row => {
             const text = row.innerText.toLowerCase();
-            row.style.display = text.includes(query) ? "" : "none";
+            const matchesSearch = text.includes(query);
+            const matchesType = typeFilter === "" || row.dataset.unit === typeFilter;
+            const matchesTarget = targetFilter === "" || row.dataset.target === targetFilter;
+            
+            row.style.display = (matchesSearch && matchesType && matchesTarget) ? "" : "none";
         });
     },
 
@@ -257,7 +270,7 @@ const ui = {
                     </div>
                     <div class="stat-card">
                         <div class="icon-circle bg-green"><i class="fa-solid fa-boxes-stacked"></i></div>
-                        <div class="stat-data"><h3>${totalStock}</h3><p>Total Units</p></div>
+                        <div class="stat-data"><h3>${totalStock}</h3><p>Total Stocks</p></div>
                     </div>
                     <div class="stat-card">
                         <div class="icon-circle bg-red" style="${(lowItems > 0 || expiringSoon > 0) ? 'animation: pulse 2s infinite;' : ''}">
@@ -279,7 +292,6 @@ const ui = {
                     </div>
                 </div>`;
             
-            // Wait for DOM update before initializing chart
             setTimeout(() => this.initDashboardAnalytics(), 100);
         }
 
@@ -288,18 +300,31 @@ const ui = {
                 <div style="display: flex; gap: 30px; align-items: start;">
                     <div style="flex: 1; min-width: 0;">
                         <div class="table-card">
-                            <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                                <div class="search-wrapper" style="margin: 0; width: 70%;">
+                            <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center;">
+                                <div class="search-wrapper" style="margin: 0; width: 40%;">
                                     <i class="fa-solid fa-magnifying-glass"></i>
-                                    <input type="text" id="search-bar" placeholder="Search inventory..." onkeyup="ui.filterInventory()">
+                                    <input type="text" id="search-bar" placeholder="Search..." onkeyup="ui.filterInventory()">
                                 </div>
-                                <button onclick="window.print()" class="no-print" style="background: var(--nav-dark); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                    <i class="fa-solid fa-print"></i> Print List
-                                </button>
+                                <div style="display: flex; gap: 8px;">
+                                    <select id="filter-unit-type" onchange="ui.filterInventory()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-weight: 600;">
+                                        <option value="">All Types</option>
+                                        <option value="Syrup">Syrup</option>
+                                        <option value="Tablet">Tablet</option>
+                                        <option value="Capsule">Capsule</option>
+                                    </select>
+                                    <select id="filter-target" onchange="ui.filterInventory()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-weight: 600;">
+                                        <option value="">All Targets</option>
+                                        <option value="Adult">Adult</option>
+                                        <option value="Kids">Kids</option>
+                                    </select>
+                                    <button onclick="window.print()" class="no-print" style="background: var(--nav-dark); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-weight: 700; cursor: pointer;">
+                                        <i class="fa-solid fa-print"></i>
+                                    </button>
+                                </div>
                             </div>
                             <table class="modern-table">
                                 <thead>
-                                    <tr><th>Item Details</th><th>Category</th><th>Stock</th><th>Expiry</th><th style="text-align:right" class="no-print">Actions</th></tr>
+                                    <tr><th>Item Details</th><th>Type/Target</th><th>Category</th><th>Stocks</th><th>Expiry</th><th style="text-align:right" class="no-print">Actions</th></tr>
                                 </thead>
                                 <tbody id="inventory-table-body">
                                     ${inventory.map(m => this.createRow(m)).join('')}
@@ -332,6 +357,25 @@ const ui = {
                             <div style="display: flex; flex-direction: column; gap: 15px;">
                                 <div class="input-field"><label>Item Name</label><input id="n" type="text" placeholder="e.g. Paracetamol"></div>
                                 <div class="input-field"><label>Strength/Specs</label><input id="mg" type="text" placeholder="e.g. 500mg"></div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div class="input-field">
+                                        <label>Unit Type</label>
+                                        <select id="unit_type" class="custom-select" style="width:100%; padding:10px; border-radius:10px; background:#f1f5f9; border:none;">
+                                            <option value="Tablet">Tablet</option>
+                                            <option value="Syrup">Syrup</option>
+                                            <option value="Capsule">Capsule</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-field">
+                                        <label>Target</label>
+                                        <select id="target_audience" class="custom-select" style="width:100%; padding:10px; border-radius:10px; background:#f1f5f9; border:none;">
+                                            <option value="Adult">Adult</option>
+                                            <option value="Kids">Kids</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <div class="input-field">
                                     <label>Category</label>
                                     <select id="c" style="width: 100%; padding: 14px; border-radius: 12px; background: #f1f5f9; border: none; font-weight: 600; outline: none;">
@@ -398,7 +442,6 @@ const ui = {
         const ctx = document.getElementById('analyticsChart')?.getContext('2d');
         if(!ctx) return;
 
-        // Destroy existing chart to prevent glitches
         if (window.pyxisChart) window.pyxisChart.destroy();
 
         window.pyxisChart = new Chart(ctx, {
@@ -474,13 +517,17 @@ const ui = {
         const expStatus = this.getExpiryStatus(m.exp);
         const isLow = m.qty < 10;
         return `
-            <tr class="${(isLow || expStatus.isCritical) ? 'critical-row' : ''}">
+            <tr class="${(isLow || expStatus.isCritical) ? 'critical-row' : ''}" data-unit="${m.unit_type}" data-target="${m.target}">
                 <td>
                     <span style="display:block; font-weight:700; font-size: 1rem;">${m.name}</span>
                     <span style="font-size:0.8rem; font-weight: 600; color:var(--text-muted);">${m.mg || 'N/A'}</span>
                 </td>
+                <td>
+                    <span style="font-size:0.75rem; font-weight:700; color:#64748b;">${m.unit_type || 'N/A'}</span><br>
+                    <small style="color: ${m.target === 'Kids' ? '#0ea5e9' : '#6366f1'}; font-weight:800;">${m.target || 'N/A'}</small>
+                </td>
                 <td><span style="background:var(--bg-light); padding:5px 10px; border-radius:6px; font-size:0.75rem; font-weight:700; color: var(--text-muted);">${m.cat}</span></td>
-                <td><span class="stock-indicator ${isLow ? 'critical' : 'stable'}" style="padding: 6px 12px; border-radius: 8px; font-weight: 800;">${m.qty} Units</span></td>
+                <td><span class="stock-indicator ${isLow ? 'critical' : 'stable'}" style="padding: 6px 12px; border-radius: 8px; font-weight: 800;">${m.qty} Stocks</span></td>
                 <td><span style="${expStatus.style}">${m.exp || '--'}</span></td>
                 <td style="text-align:right" class="no-print">
                     <button class="icon-btn" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name.replace(/'/g, "\\'")}')">
@@ -499,12 +546,14 @@ const ui = {
         const c = document.getElementById('c').value;
         const q = document.getElementById('q').value;
         const e = document.getElementById('e').value;
-        if(n && q && c) app.saveMed(n, mg, c, q, e);
+        const ut = document.getElementById('unit_type').value;
+        const tg = document.getElementById('target_audience').value;
+        if(n && q && c) app.saveMed(n, mg, c, q, e, ut, tg);
         else alert("Item Name, Category, and Quantity are required.");
     },
 
     async dispense(id, currentQty, name) {
-        const v = prompt(`Dispense ${name}?\nHow many units to remove?`);
+        const v = prompt(`Dispense ${name}?\nHow many stocks to remove?`);
         if(v) { 
             const removeQty = parseInt(v);
             if (isNaN(removeQty) || removeQty <= 0) return alert("Please enter a valid number.");
@@ -516,7 +565,7 @@ const ui = {
             if(success) {
                 await app.logTransaction(name, 'Dispensed', -removeQty, 'Success');
                 await app.init();
-                alert(`Dispensed ${removeQty} units of ${name}`);
+                alert(`Dispensed ${removeQty} stocks of ${name}`);
             }
         }
     }
