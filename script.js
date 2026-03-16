@@ -129,21 +129,6 @@ const app = {
         }
     },
 
-    async editItem(id, updates) {
-        const { error } = await _supabase
-            .from('inventory')
-            .update(updates)
-            .eq('id', id);
-
-        if (!error) {
-            await this.logTransaction(updates.name, 'Updated Info', 0, 'Success');
-            await this.init();
-            ui.render('inventory');
-        } else {
-            alert("Update Failed: " + error.message);
-        }
-    },
-
     async deleteItem(id) {
         const itemToDelete = inventory.find(m => m.id === id);
         if (!itemToDelete) return;
@@ -311,7 +296,7 @@ const ui = {
                             <span style="color: #0ea5e9;">● SUPPLIES</span>
                          </div>
                     </div>
-                    <div style="position: relative; height: 350px; width: 100%;">
+                    <div style="position: relative; height: 250px; width: 100%;">
                         <canvas id="analyticsChart"></canvas>
                     </div>
                 </div>`;
@@ -478,19 +463,43 @@ const ui = {
 
         if (window.pyxisChart) window.pyxisChart.destroy();
         window.pyxisChart = new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Medicines', data: labels.map(d => dailyData[d].med), backgroundColor: '#6366f1', borderRadius: 6 },
-                    { label: 'Supplies', data: labels.map(d => dailyData[d].sup), backgroundColor: '#0ea5e9', borderRadius: 6 }
+                    { 
+                        label: 'Medicines', 
+                        data: labels.map(d => dailyData[d].med), 
+                        borderColor: '#6366f1', 
+                        backgroundColor: '#6366f1',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        fill: false 
+                    },
+                    { 
+                        label: 'Supplies', 
+                        data: labels.map(d => dailyData[d].sup), 
+                        borderColor: '#0ea5e9', 
+                        backgroundColor: '#0ea5e9',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        fill: false 
+                    }
                 ]
             },
             options: { 
                 responsive: true, 
                 maintainAspectRatio: false, 
                 plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#f0f0f0', drawBorder: false }
+                    }, 
+                    x: { grid: { display: false } } 
+                }
             }
         });
     },
@@ -541,60 +550,10 @@ const ui = {
                 <td><span class="stock-indicator ${m.qty < 10 ? 'critical' : 'stable'}" style="padding: 6px 12px; border-radius: 8px; font-weight: 800;">${m.qty}</span></td>
                 <td><span style="${expStatus.style}">${m.exp || '--'}</span></td>
                 <td style="text-align:right" class="no-print">
-                    <button class="icon-btn" onclick="ui.showEditModal('${m.id}')" title="Edit Item"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="icon-btn" style="margin-left:8px;" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name.replace(/'/g, "\\'")}')" title="Dispense"><i class="fa-solid fa-minus-circle"></i></button>
-                    <button class="icon-btn" style="color:var(--danger); margin-left:8px;" onclick="app.deleteItem('${m.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    <button class="icon-btn" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name.replace(/'/g, "\\'")}')"><i class="fa-solid fa-minus-circle"></i></button>
+                    <button class="icon-btn" style="color:var(--danger); margin-left:15px;" onclick="app.deleteItem('${m.id}')"><i class="fa-solid fa-trash"></i></button>
                 </td>
             </tr>`;
-    },
-
-    showEditModal(id) {
-        const item = inventory.find(i => i.id === id);
-        if(!item) return;
-
-        const modalOverlay = document.createElement('div');
-        modalOverlay.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:9999;";
-        modalOverlay.id = "edit-modal-overlay";
-
-        modalOverlay.innerHTML = `
-            <div class="form-card" style="width: 450px; padding: 30px; position: relative;">
-                <h3 style="margin-bottom: 20px;">Edit Item</h3>
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div class="input-field"><label>Brand Name</label><input id="edit-n" type="text" value="${item.name}"></div>
-                    <div class="input-field"><label>Subname</label><input id="edit-sn" type="text" value="${item.subname || ''}"></div>
-                    <div class="input-field"><label>Specs/Strength</label><input id="edit-mg" type="text" value="${item.mg || ''}"></div>
-                    <div class="input-field">
-                        <label>Category</label>
-                        <select id="edit-c" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
-                            ${categories.map(cat => `<option value="${cat.name}" ${cat.name === item.cat ? 'selected' : ''}>${cat.name}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="input-field"><label>Expiry</label><input id="edit-e" type="date" value="${item.exp || ''}"></div>
-                    <div style="display:flex; gap:10px; margin-top:15px;">
-                        <button onclick="ui.closeEditModal()" style="flex:1; padding:12px; border-radius:10px; border:none; background:#e2e8f0; font-weight:700; cursor:pointer;">Cancel</button>
-                        <button id="save-edit-btn" style="flex:2; padding:12px; border-radius:10px; border:none; background:var(--accent-blue); color:white; font-weight:700; cursor:pointer;">Update Cloud</button>
-                    </div>
-                </div>
-            </div>`;
-
-        document.body.appendChild(modalOverlay);
-
-        document.getElementById('save-edit-btn').onclick = () => {
-            const updates = {
-                name: document.getElementById('edit-n').value,
-                subname: document.getElementById('edit-sn').value,
-                mg: document.getElementById('edit-mg').value,
-                cat: document.getElementById('edit-c').value,
-                exp: document.getElementById('edit-e').value
-            };
-            app.editItem(id, updates);
-            this.closeEditModal();
-        };
-    },
-
-    closeEditModal() {
-        const modal = document.getElementById('edit-modal-overlay');
-        if(modal) modal.remove();
     },
 
     handleSave() {
