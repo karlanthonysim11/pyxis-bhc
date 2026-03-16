@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @media print {
             .sidebar, .top-nav, .btn-submit, .search-container, .nav-icons, .management-grid { display: none !important; }
@@ -147,6 +148,20 @@
                 <div><h3 id="stat-expiry">0</h3><p>Near Expiry</p></div>
             </div>
         </div>
+
+        <div class="analytics-card">
+            <div class="analytics-header">
+                <h3>Inventory Movement (Last 7 Days)</h3>
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">
+                    <i class="fa-solid fa-circle" style="color: #0ea5e9; margin-right: 5px;"></i> Arrivals
+                    <i class="fa-solid fa-circle" style="color: #ef4444; margin: 0 5px 0 15px;"></i> Dispensed
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </div>
+
         <div class="form-card" style="max-width: 100%; margin-top: 20px;">
             <div class="form-header">
                 <i class="fa-solid fa-heart-pulse" style="color: var(--accent-blue);"></i>

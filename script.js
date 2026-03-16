@@ -81,7 +81,6 @@ const app = {
         window.location.reload();
     },
 
-    // UPDATED: Matches your new Supabase Table Columns
     async logTransaction(itemName, action, qty, status) {
         try {
             await _supabase.from('logs').insert([{ 
@@ -115,7 +114,6 @@ const app = {
             .insert([{ name: n, mg: mg, cat: c, qty: parseInt(q), exp: e }]);
             
         if(!error) {
-            // Log the new item addition
             await this.logTransaction(n, 'Added to Inventory', q, 'Success');
             await this.init();
             ui.render('inventory');
@@ -267,7 +265,13 @@ const ui = {
                         </div>
                         <div class="stat-data"><h3 style="color:var(--danger)">${lowItems + expiringSoon}</h3><p>Critical Alerts</p></div>
                     </div>
+                </div>
+                <div class="table-card" style="margin-top: 30px; padding: 25px;">
+                    <h3 style="margin-bottom: 20px;">Daily Arrivals vs Dispensed</h3>
+                    <canvas id="analyticsChart" style="max-height: 350px;"></canvas>
                 </div>`;
+            
+            this.initDashboardAnalytics();
         }
 
         if(tab === 'inventory') {
@@ -366,6 +370,38 @@ const ui = {
         }
     },
 
+    async initDashboardAnalytics() {
+        const { data: logs, error } = await _supabase.from('logs').select('created_at, qty_change').order('created_at', { ascending: true });
+        if (error || !logs || logs.length === 0) return;
+
+        const dailyData = {};
+        logs.forEach(log => {
+            const date = new Date(log.created_at).toLocaleDateString();
+            if (!dailyData[date]) dailyData[date] = { arrivals: 0, dispensed: 0 };
+            if (log.qty_change > 0) dailyData[date].arrivals += log.qty_change;
+            else dailyData[date].dispensed += Math.abs(log.qty_change);
+        });
+
+        const labels = Object.keys(dailyData).slice(-7); 
+        const arrivals = labels.map(d => dailyData[d].arrivals);
+        const dispensed = labels.map(d => dailyData[d].dispensed);
+
+        const ctx = document.getElementById('analyticsChart')?.getContext('2d');
+        if(!ctx) return;
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Arrivals', data: arrivals, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', fill: true, tension: 0.3 },
+                    { label: 'Dispensed', data: dispensed, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 }
+                ]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+    },
+
     async loadAuditLogs() {
         const tbody = document.getElementById('audit-table-body');
         const { data, error } = await _supabase.from('logs').select('*').order('created_at', { ascending: false }).limit(50);
@@ -435,7 +471,6 @@ const ui = {
             
             const success = await app.updateQty(id, newQty);
             if(success) {
-                // Log the subtraction as a negative change
                 await app.logTransaction(name, 'Dispensed', -removeQty, 'Success');
                 await app.init();
                 alert(`Dispensed ${removeQty} units of ${name}`);
