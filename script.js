@@ -250,7 +250,6 @@ const ui = {
         this.render(tab);
     },
 
-    // Helper for showing/hiding fields based on type selection
     toggleTypeFields() {
         const type = document.getElementById('item_type').value;
         const medFields = document.getElementById('medicine-only-fields');
@@ -291,10 +290,10 @@ const ui = {
                 </div>
                 <div class="table-card" style="margin-top: 30px; padding: 25px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                         <h3 style="margin: 0; letter-spacing: 1px; font-weight: 800;">DATA ANALYTICS</h3>
+                         <h3 style="margin: 0; letter-spacing: 1px; font-weight: 800;">USAGE ANALYTICS</h3>
                          <div style="font-size: 0.8rem; font-weight: 700;">
-                            <span style="color: #22c55e; margin-right: 15px;">● ARRIVALS</span>
-                            <span style="color: #ef4444;">● DISPENSED</span>
+                            <span style="color: #6366f1; margin-right: 15px;">● MEDICINES</span>
+                            <span style="color: #0ea5e9;">● SUPPLIES</span>
                          </div>
                     </div>
                     <div style="position: relative; height: 350px; width: 100%;">
@@ -321,7 +320,9 @@ const ui = {
                                         <option value="Syrup">Syrup</option>
                                         <option value="Tablet">Tablet</option>
                                         <option value="Capsule">Capsule</option>
-                                        <option value="Supply">Supply</option>
+                                        <option value="Piece">Piece</option>
+                                        <option value="Box">Box</option>
+                                        <option value="Pair">Pair</option>
                                     </select>
                                     <select id="filter-target" onchange="ui.filterInventory()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-weight: 600;">
                                         <option value="">All Targets</option>
@@ -336,7 +337,7 @@ const ui = {
                             </div>
                             <table class="modern-table">
                                 <thead>
-                                    <tr><th>Item Details</th><th>Type/Target</th><th>Category</th><th>Stocks</th><th>Expiry</th><th style="text-align:right" class="no-print">Actions</th></tr>
+                                    <tr><th>Item Details</th><th>Classification</th><th>Category</th><th>Stocks</th><th>Expiry</th><th style="text-align:right" class="no-print">Actions</th></tr>
                                 </thead>
                                 <tbody id="inventory-table-body">
                                     ${inventory.map(m => this.createRow(m)).join('')}
@@ -374,39 +375,30 @@ const ui = {
                                         <option value="Supply">Medical Supply (Gloves, Mask, etc)</option>
                                     </select>
                                 </div>
-
-                                <div class="input-field"><label>Item / Brand Name</label><input id="n" type="text" placeholder="e.g. Biogesic or Indoplas"></div>
-                                
+                                <div class="input-field"><label>Item / Brand Name</label><input id="n" type="text" placeholder="e.g. Biogesic"></div>
                                 <div id="medicine-only-fields">
                                     <div class="input-field"><label>Subname / Generic</label><input id="sn" type="text" placeholder="e.g. Paracetamol"></div>
                                     <div class="input-field"><label>Strength/Specs</label><input id="mg" type="text" placeholder="e.g. 500mg"></div>
                                 </div>
-                                
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                     <div class="input-field">
                                         <label>Unit Type</label>
                                         <select id="unit_type" class="custom-select" style="width:100%; padding:10px; border-radius:10px; background:#f1f5f9; border:none;">
-                                            <option value="Tablet">Tablet</option>
-                                            <option value="Syrup">Syrup</option>
-                                            <option value="Capsule">Capsule</option>
-                                            <option value="Piece">Piece</option>
-                                            <option value="Box">Box</option>
-                                            <option value="Pair">Pair</option>
+                                            <option value="Tablet">Tablet</option><option value="Syrup">Syrup</option>
+                                            <option value="Capsule">Capsule</option><option value="Piece">Piece</option>
+                                            <option value="Box">Box</option><option value="Pair">Pair</option>
                                         </select>
                                     </div>
                                     <div class="input-field">
                                         <label>Target</label>
                                         <select id="target_audience" class="custom-select" style="width:100%; padding:10px; border-radius:10px; background:#f1f5f9; border:none;">
-                                            <option value="Adult">Adult</option>
-                                            <option value="Kids">Kids</option>
-                                            <option value="General">General</option>
+                                            <option value="Adult">Adult</option><option value="Kids">Kids</option><option value="General">General</option>
                                         </select>
                                     </div>
                                 </div>
-
                                 <div class="input-field">
                                     <label>Category</label>
-                                    <select id="c" style="width: 100%; padding: 14px; border-radius: 12px; background: #f1f5f9; border: none; font-weight: 600; outline: none;">
+                                    <select id="c" style="width: 100%; padding: 14px; border-radius: 12px; background: #f1f5f9; border: none; font-weight: 600;">
                                         <option value="">Select Category</option>
                                         ${categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}
                                     </select>
@@ -415,9 +407,7 @@ const ui = {
                                     <div class="input-field"><label>Quantity</label><input id="q" type="number" placeholder="0"></div>
                                     <div class="input-field"><label>Expiration</label><input id="e" type="date"></div>
                                 </div>
-                                <button onclick="ui.handleSave()" style="margin-top: 10px; background: var(--accent-blue); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;">
-                                    Save to Cloud
-                                </button>
+                                <button onclick="ui.handleSave()" style="margin-top: 10px; background: var(--accent-blue); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 800; cursor: pointer;">Save to Cloud</button>
                             </div>
                         </div>
                     </div>
@@ -452,66 +442,40 @@ const ui = {
     },
 
     async initDashboardAnalytics() {
-        const { data: logs, error } = await _supabase.from('logs').select('created_at, qty_change').order('created_at', { ascending: true });
+        const { data: logs, error } = await _supabase.from('logs').select('created_at, qty_change, item_name').order('created_at', { ascending: true });
         if (error || !logs || logs.length === 0) return;
 
         const dailyData = {};
         logs.forEach(log => {
             const date = new Date(log.created_at).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' });
-            if (!dailyData[date]) dailyData[date] = { arrivals: 0, dispensed: 0 };
-            if (log.qty_change > 0) dailyData[date].arrivals += log.qty_change;
-            else dailyData[date].dispensed += Math.abs(log.qty_change);
+            if (!dailyData[date]) dailyData[date] = { med: 0, sup: 0 };
+            
+            const item = inventory.find(i => i.name === log.item_name);
+            const isSupply = item && ['Piece', 'Box', 'Pair'].includes(item.unit_type);
+            
+            if (isSupply) dailyData[date].sup += Math.abs(log.qty_change);
+            else dailyData[date].med += Math.abs(log.qty_change);
         });
 
-        const labels = Object.keys(dailyData).slice(-7); 
-        const arrivals = labels.map(d => dailyData[d].arrivals);
-        const dispensed = labels.map(d => dailyData[d].dispensed);
-
+        const labels = Object.keys(dailyData).slice(-7);
         const ctx = document.getElementById('analyticsChart')?.getContext('2d');
         if(!ctx) return;
 
         if (window.pyxisChart) window.pyxisChart.destroy();
-
         window.pyxisChart = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
-                    { 
-                        label: 'Arrivals', 
-                        data: arrivals, 
-                        borderColor: '#22c55e', 
-                        backgroundColor: 'rgba(34, 197, 94, 0.1)', 
-                        fill: true, 
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointRadius: 4
-                    },
-                    { 
-                        label: 'Dispensed', 
-                        data: dispensed, 
-                        borderColor: '#ef4444', 
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)', 
-                        fill: true, 
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointRadius: 4
-                    }
+                    { label: 'Medicines', data: labels.map(d => dailyData[d].med), backgroundColor: '#6366f1', borderRadius: 6 },
+                    { label: 'Supplies', data: labels.map(d => dailyData[d].sup), backgroundColor: '#0ea5e9', borderRadius: 6 }
                 ]
             },
             options: { 
                 responsive: true, 
-                maintainAspectRatio: false,
+                maintainAspectRatio: false, 
                 plugins: { legend: { display: false } },
-                scales: { 
-                    y: { 
-                        beginAtZero: true,
-                        grid: { color: '#f1f5f9' }
-                    },
-                    x: {
-                        grid: { display: false }
-                    }
-                } 
+                scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
             }
         });
     },
@@ -543,27 +507,27 @@ const ui = {
 
     createRow(m) {
         const expStatus = this.getExpiryStatus(m.exp);
-        const isLow = m.qty < 10;
+        const isSupply = ['Piece', 'Box', 'Pair'].includes(m.unit_type);
+        const badgeColor = isSupply ? '#0ea5e9' : '#6366f1';
+        const badgeText = isSupply ? 'SUPPLY' : 'MEDICINE';
+
         return `
-            <tr class="${(isLow || expStatus.isCritical) ? 'critical-row' : ''}" data-unit="${m.unit_type}" data-target="${m.target}">
+            <tr class="${(m.qty < 10 || expStatus.isCritical) ? 'critical-row' : ''}" data-unit="${m.unit_type}" data-target="${m.target}">
                 <td>
                     <span style="display:block; font-weight:700; font-size: 1rem;">${m.name}</span>
-                    <small style="color:var(--accent-blue); font-weight:600; text-transform:uppercase;">${m.subname || ''}</small> <small style="font-size:0.8rem; font-weight: 600; color:var(--text-muted);">${m.mg || ''}</small>
+                    <small style="color:var(--accent-blue); font-weight:600; text-transform:uppercase;">${m.subname || ''}</small> 
+                    <small style="font-size:0.8rem; font-weight: 600; color:var(--text-muted);">${m.mg || ''}</small>
                 </td>
                 <td>
-                    <span style="font-size:0.75rem; font-weight:700; color:#64748b;">${m.unit_type || 'N/A'}</span><br>
-                    <small style="color: ${m.target === 'Kids' ? '#0ea5e9' : (m.target === 'Adult' ? '#6366f1' : '#64748b')}; font-weight:800;">${m.target || 'N/A'}</small>
+                    <span style="background:${badgeColor}20; color:${badgeColor}; padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:800;">${badgeText}</span><br>
+                    <small style="color:#64748b; font-weight:700;">${m.unit_type} (${m.target})</small>
                 </td>
                 <td><span style="background:var(--bg-light); padding:5px 10px; border-radius:6px; font-size:0.75rem; font-weight:700; color: var(--text-muted);">${m.cat}</span></td>
-                <td><span class="stock-indicator ${isLow ? 'critical' : 'stable'}" style="padding: 6px 12px; border-radius: 8px; font-weight: 800;">${m.qty} Stocks</span></td>
+                <td><span class="stock-indicator ${m.qty < 10 ? 'critical' : 'stable'}" style="padding: 6px 12px; border-radius: 8px; font-weight: 800;">${m.qty}</span></td>
                 <td><span style="${expStatus.style}">${m.exp || '--'}</span></td>
                 <td style="text-align:right" class="no-print">
-                    <button class="icon-btn" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name.replace(/'/g, "\\'")}')">
-                        <i class="fa-solid fa-minus-circle"></i>
-                    </button>
-                    <button class="icon-btn" style="color:var(--danger); margin-left:15px;" onclick="app.deleteItem('${m.id}')">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+                    <button class="icon-btn" onclick="ui.dispense('${m.id}', ${m.qty}, '${m.name.replace(/'/g, "\\'")}')"><i class="fa-solid fa-minus-circle"></i></button>
+                    <button class="icon-btn" style="color:var(--danger); margin-left:15px;" onclick="app.deleteItem('${m.id}')"><i class="fa-solid fa-trash"></i></button>
                 </td>
             </tr>`;
     },
@@ -571,10 +535,8 @@ const ui = {
     handleSave() {
         const type = document.getElementById('item_type').value;
         const n = document.getElementById('n').value;
-        // If it's a supply, we send empty strings for subname and mg
         const sn = (type === 'Medicine') ? document.getElementById('sn').value : "";
         const mg = (type === 'Medicine') ? document.getElementById('mg').value : "";
-        
         const c = document.getElementById('c').value;
         const q = document.getElementById('q').value;
         const e = document.getElementById('e').value;
@@ -582,7 +544,7 @@ const ui = {
         const tg = document.getElementById('target_audience').value;
         
         if(n && q && c) app.saveMed(n, sn, mg, c, q, e, ut, tg);
-        else alert("Item Name, Category, and Quantity are required.");
+        else alert("Fill required fields.");
     },
 
     async dispense(id, currentQty, name) {
@@ -590,15 +552,12 @@ const ui = {
         if(v) { 
             const removeQty = parseInt(v);
             if (isNaN(removeQty) || removeQty <= 0) return alert("Please enter a valid number.");
-            
             const newQty = parseInt(currentQty) - removeQty;
             if(newQty < 0) return alert("Insufficient stock!");
-            
             const success = await app.updateQty(id, newQty);
             if(success) {
                 await app.logTransaction(name, 'Dispensed', -removeQty, 'Success');
                 await app.init();
-                alert(`Dispensed ${removeQty} stocks of ${name}`);
             }
         }
     }
