@@ -64,13 +64,33 @@ const app = {
     },
 
     async login() {
-        const user = document.getElementById('username').value.toLowerCase();
-        if(user === 'admin') {
+        // 1. Get values from the input fields
+        const userField = document.getElementById('username');
+        const passField = document.getElementById('password'); // Ensure your HTML has this ID
+        
+        const inputUser = userField.value.trim().toLowerCase();
+        const inputPass = passField ? passField.value.trim() : "";
+
+        // 2. Define Authorized Credentials
+        const AUTH_USER = "admin";
+        const AUTH_PASS = "pyxis2026";
+
+        // 3. Strict Verification
+        if (inputUser === AUTH_USER && inputPass === AUTH_PASS) {
             localStorage.setItem('pyxis_logged_in', 'true');
+            
+            // Clear fields for security
+            userField.value = "";
+            if(passField) passField.value = "";
+            
             this.showAppInterface();
             await this.init(); 
         } else {
-            alert("Access Denied");
+            alert("ACCESS DENIED: Invalid Username or Password.");
+            if(passField) {
+                passField.value = "";
+                passField.focus();
+            }
         }
     },
 
