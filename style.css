@@ -39,9 +39,44 @@ body { background: var(--bg-light); color: var(--text-dark); height: 100vh; over
     background: white; width: 450px; padding: 60px 50px; border-radius: 28px; 
     text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border);
 }
-.auth-logo i { font-size: 3.5rem; color: var(--accent-blue); margin-bottom: 15px; }
-.auth-logo h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; color: var(--text-dark); }
+
+/* Updated Professional Title and Logo Scaling */
+.login-logo-img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.sidebar-logo-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto;
+}
+
+.auth-logo { 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-logo h1 { 
+    font-size: 1.4rem; 
+    line-height: 1.2;
+    font-weight: 700; 
+    letter-spacing: -0.5px; 
+    color: var(--text-dark); 
+    margin-top: 10px;
+}
+
 .auth-logo p { color: var(--text-muted); font-weight: 500; margin-bottom: 40px; }
+
 .input-field { text-align: left; }
 .input-field label { display: block; font-weight: 700; font-size: 0.85rem; color: #475569; margin-bottom: 8px; padding-left: 4px; }
 .input-field input { 

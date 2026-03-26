@@ -35,8 +35,8 @@
 
         /* Specific styles for the logo images */
         .login-logo-img {
-            width: 120px;
-            height: 120px;
+            width: 100px; /* Reduced for a cleaner look */
+            height: 100px;
             object-fit: contain;
             border-radius: 50%;
             margin-bottom: 10px;
@@ -53,6 +53,15 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            text-align: center;
+        }
+        /* Smaller, professional stacked title */
+        .auth-logo h1 {
+            font-size: 1.4rem; 
+            line-height: 1.2;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 10px 0 0 0;
         }
     </style>
 </head>
@@ -62,7 +71,7 @@
         <div class="auth-card">
             <div class="auth-logo">
                 <img src="brgy_logo.jpg" alt="Logo" class="login-logo-img">
-                <h1 style="margin-top: 10px;">PYXIS: Brgy. Indangan Inventory System</h1>
+                <h1>PYXIS: Brgy. Indangan<br>Inventory System</h1>
             </div>
             
             <div class="auth-form">
