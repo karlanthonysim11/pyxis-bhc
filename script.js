@@ -66,7 +66,7 @@ const app = {
     async login() {
         // 1. Get values from the input fields
         const userField = document.getElementById('username');
-        const passField = document.getElementById('password'); // Ensure your HTML has this ID
+        const passField = document.getElementById('password'); 
         
         const inputUser = userField.value.trim().toLowerCase();
         const inputPass = passField ? passField.value.trim() : "";
