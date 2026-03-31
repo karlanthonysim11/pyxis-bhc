@@ -1,10 +1,10 @@
 :root {
     --bg-light: #f1f5f9;
     --sidebar-w: 280px;
-    --nav-dark: #0f172a;       /* Classy Dark Blue for Sidebar */
+    --nav-dark: #0f172a;
     --accent-blue: #0ea5e9;
     --accent-dark: #0369a1;
-    --accent-supply: #0ea5e9; /* Light blue for supplies */
+    --accent-supply: #0ea5e9;
     --text-dark: #0f172a;
     --text-muted: #64748b;
     --border: #e2e8f0;
