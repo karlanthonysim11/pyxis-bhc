@@ -195,20 +195,85 @@ const app = {
         }
     },
 
-    async deleteCategory(id, name) {
-        const normalizedName = (name || '').toString().trim().toLowerCase();
-        const isUsed = inventory.some(m => ((m.cat || '').toString().trim().toLowerCase()) === normalizedName);
-        if (isUsed) return alert(`Cannot delete "${name}". Items are still assigned to it.`);
+    async deleteCategory(id) {
+        const category = categories.find(c => String(c.id) === String(id));
+        if (!category) {
+            alert("Category not found. Please refresh and try again.");
+            return;
+        }
 
-        if(confirm(`Delete category "${name}"?`)) {
-            const { error } = await _supabase.from('categories').delete().eq('id', id);
-            if(!error) {
-                await this.init();
-                ui.render('inventory');
-            } else {
-                alert("Failed to delete category: " + error.message);
+        const name = (category.name || '').toString();
+        const normalizedName = name.trim().toLowerCase();
+        const linkedItems = inventory.filter(m => ((m.cat || '').toString().trim().toLowerCase()) === normalizedName);
+
+        if (linkedItems.length > 0) {
+            const proceed = confirm(`"${name}" is assigned to ${linkedItems.length} item(s). Delete category and move those items to "Uncategorized"?`);
+            if (!proceed) return;
+
+            const fallbackCategory = 'Uncategorized';
+            const { data: fallbackExists, error: fallbackCheckError } = await _supabase
+                .from('categories')
+                .select('id')
+                .eq('name', fallbackCategory)
+                .limit(1);
+
+            if (fallbackCheckError) {
+                alert("Failed to verify fallback category: " + fallbackCheckError.message);
+                return;
+            }
+
+            if (!fallbackExists || fallbackExists.length === 0) {
+                const { error: fallbackCreateError } = await _supabase
+                    .from('categories')
+                    .insert([{ name: fallbackCategory }]);
+
+                if (fallbackCreateError) {
+                    alert("Failed to create fallback category: " + fallbackCreateError.message);
+                    return;
+                }
+            }
+
+            const sourceCategoryNames = [...new Set(linkedItems.map(m => (m.cat || '').toString().trim()).filter(Boolean))];
+            for (const sourceName of sourceCategoryNames) {
+                const { error: moveError } = await _supabase
+                    .from('inventory')
+                    .update({ cat: fallbackCategory })
+                    .eq('cat', sourceName);
+
+                if (moveError) {
+                    alert("Failed to reassign inventory before delete: " + moveError.message);
+                    return;
+                }
             }
         }
+
+        if (!confirm(`Delete category "${name}"?`)) return;
+
+        const { data: deletedRows, error: deleteByIdError } = await _supabase
+            .from('categories')
+            .delete()
+            .eq('id', id)
+            .select('id');
+
+        if (deleteByIdError) {
+            alert("Failed to delete category: " + deleteByIdError.message);
+            return;
+        }
+
+        if (!deletedRows || deletedRows.length === 0) {
+            const { error: deleteByNameError } = await _supabase
+                .from('categories')
+                .delete()
+                .eq('name', name);
+
+            if (deleteByNameError) {
+                alert("Failed to delete category: " + deleteByNameError.message);
+                return;
+            }
+        }
+
+        await this.init();
+        ui.render('inventory');
     },
 
     updateBadge() {
@@ -382,7 +447,7 @@ const ui = {
                             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                 ${categories.map(c => `
                                     <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                                        ${c.name} <i class="fa-solid fa-xmark" style="cursor: pointer; opacity: 0.5;" onclick='app.deleteCategory(${JSON.stringify(c.id)}, ${JSON.stringify(c.name)})'></i>
+                                        ${c.name} <i class="fa-solid fa-xmark" style="cursor: pointer; opacity: 0.5;" onclick='app.deleteCategory(${JSON.stringify(c.id)})'></i>
                                     </div>
                                 `).join('')}
                             </div>
