@@ -1,56 +1,14 @@
-// 1. Initialize Supabase from Vercel runtime config
-let _supabase = null;
-let supabaseReadyPromise = null;
-
-function showSupabaseConfigError(message) {
-    console.error(message);
-    alert(message);
-}
-
-async function getSupabaseConfig() {
-    try {
-        const res = await fetch('/api/config', { cache: 'no-store' });
-        if (!res.ok) return null;
-        return await res.json();
-    } catch (_) {
-        return null;
-    }
-}
-
-async function ensureSupabaseClient() {
-    if (_supabase) return _supabase;
-
-    if (!supabaseReadyPromise) {
-        supabaseReadyPromise = (async () => {
-            const runtimeConfig = await getSupabaseConfig();
-            const supabaseUrl = runtimeConfig?.supabaseUrl || window.PYXIS_SUPABASE_URL;
-            const supabaseKey = runtimeConfig?.supabaseAnonKey || window.PYXIS_SUPABASE_ANON_KEY;
-
-            if (!supabaseUrl || !supabaseKey) {
-                throw new Error('Supabase is not configured. Set Vercel environment variables SUPABASE_URL and SUPABASE_ANON_KEY, then redeploy.');
-            }
-
-            _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-            return _supabase;
-        })();
-    }
-
-    return supabaseReadyPromise;
-}
+// 1. Initialize Supabase
+const supabaseUrl = 'https://ahofyrpymxbqlnvhrbtq.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFob2Z5cnB5bXhicWxudmhyYnRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTIwNjAsImV4cCI6MjA4NzUyODA2MH0.9Q07cxQoRMHMQfczSk5DTzcdntJDFihPYxsur1bGDnc';
+const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // 2. Global data variables
 let inventory = [];
 let categories = [];
 
 const app = {
-    async checkSession() {
-        try {
-            await ensureSupabaseClient();
-        } catch (err) {
-            showSupabaseConfigError(err.message || 'Supabase initialization failed.');
-            return;
-        }
-
+    checkSession() {
         const isLoggedIn = localStorage.getItem('pyxis_logged_in');
         if (isLoggedIn === 'true') {
             this.showAppInterface();
@@ -60,8 +18,6 @@ const app = {
 
     async init() {
         try {
-            await ensureSupabaseClient();
-
             const { data: invData, error: invErr } = await _supabase.from('inventory').select('*').order('name');
             const { data: catData, error: catErr } = await _supabase.from('categories').select('*').order('name');
             
@@ -240,8 +196,7 @@ const app = {
     },
 
     async deleteCategory(id, name) {
-        const normalizedName = (name || '').toString().trim().toLowerCase();
-        const isUsed = inventory.some(m => ((m.cat || '').toString().trim().toLowerCase()) === normalizedName);
+        const isUsed = inventory.some(m => m.cat === name);
         if (isUsed) return alert(`Cannot delete "${name}". Items are still assigned to it.`);
 
         if(confirm(`Delete category "${name}"?`)) {
@@ -249,8 +204,6 @@ const app = {
             if(!error) {
                 await this.init();
                 ui.render('inventory');
-            } else {
-                alert("Failed to delete category: " + error.message);
             }
         }
     },
@@ -426,7 +379,7 @@ const ui = {
                             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                 ${categories.map(c => `
                                     <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                                        ${c.name} <i class="fa-solid fa-xmark" style="cursor: pointer; opacity: 0.5;" onclick='app.deleteCategory(${JSON.stringify(c.id)}, ${JSON.stringify(c.name)})'></i>
+                                        ${c.name} <i class="fa-solid fa-xmark" style="cursor: pointer; opacity: 0.5;" onclick="app.deleteCategory('${c.id}', '${c.name}')"></i>
                                     </div>
                                 `).join('')}
                             </div>
