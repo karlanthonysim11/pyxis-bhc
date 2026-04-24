@@ -196,7 +196,8 @@ const app = {
     },
 
     async deleteCategory(id, name) {
-        const isUsed = inventory.some(m => m.cat === name);
+        const normalizedName = (name || '').toString().trim().toLowerCase();
+        const isUsed = inventory.some(m => ((m.cat || '').toString().trim().toLowerCase()) === normalizedName);
         if (isUsed) return alert(`Cannot delete "${name}". Items are still assigned to it.`);
 
         if(confirm(`Delete category "${name}"?`)) {
@@ -204,6 +205,8 @@ const app = {
             if(!error) {
                 await this.init();
                 ui.render('inventory');
+            } else {
+                alert("Failed to delete category: " + error.message);
             }
         }
     },
@@ -379,7 +382,7 @@ const ui = {
                             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                 ${categories.map(c => `
                                     <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                                        ${c.name} <i class="fa-solid fa-xmark" style="cursor: pointer; opacity: 0.5;" onclick="app.deleteCategory('${c.id}', '${c.name}')"></i>
+                                        ${c.name} <i class="fa-solid fa-xmark" style="cursor: pointer; opacity: 0.5;" onclick='app.deleteCategory(${JSON.stringify(c.id)}, ${JSON.stringify(c.name)})'></i>
                                     </div>
                                 `).join('')}
                             </div>
